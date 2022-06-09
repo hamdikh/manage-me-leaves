@@ -4,20 +4,15 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
 public class ResponseDTO extends AbstractAuditableEntityDTO {
 
-    private String type;
-
-    private String description;
-
     private String status;
 
-    private LocalDate startDate;
-
-    private LocalDate endDate;
+    private List<LeaveDTO> leaves;
 
     private CollaboratorDTO collaborator;
 

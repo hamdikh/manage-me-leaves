@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,8 +17,8 @@ public interface HolidayRepository extends JpaRepository<Holiday, UUID> {
     @Query(value = "SELECT DISTINCT(h.*) FROM public.holidays AS h WHERE is_deleted = 'false' AND EXTRACT(year FROM date) = :year", nativeQuery = true)
     List<Holiday> findAllByYear(String year);
 
-    @Query(value = "SELECT DISTINCT(h.*) FROM public.holidays AS h WHERE is_deleted = 'false' AND is_enabled = 'true' AND EXTRACT(year FROM date) = :year", nativeQuery = true)
-    List<Holiday> findAllByYearAndEnabled(String year);
+    @Query(value = "SELECT DISTINCT(h.*) FROM public.holidays AS h WHERE is_deleted = 'false' AND is_enabled = 'true' AND year = :year", nativeQuery = true)
+    List<Holiday> findAllByYearAndEnabled(Integer year);
 
     @Transactional
     @Modifying
@@ -33,5 +34,11 @@ public interface HolidayRepository extends JpaRepository<Holiday, UUID> {
     @Modifying
     @Query("UPDATE Holiday h SET h.isDeleted = true WHERE h.id = :id")
     void delete(UUID id);
+
+    @Query("SELECT h FROM Holiday h WHERE h.isDeleted = false AND h.id = :id")
+    Holiday findHolidayById(UUID id);
+
+    @Query("SELECT h.date FROM Holiday h WHERE h.isDeleted = false AND h.isEnabled = true")
+    List<LocalDate> enabledHolidaysDate();
 
 }

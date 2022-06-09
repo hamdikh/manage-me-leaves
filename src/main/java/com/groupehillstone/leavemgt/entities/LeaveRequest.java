@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
@@ -15,21 +16,11 @@ import java.time.LocalDate;
 public class LeaveRequest extends AbstractAuditableEntity {
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "type")
-    private LeaveType type;
-
-    @Column(name = "description", length = 10240)
-    private String description;
-
-    @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private LeaveStatus status;
 
-    @Column(name = "start_date")
-    private LocalDate startDate;
-
-    @Column(name = "end_date")
-    private LocalDate endDate;
+    @OneToMany
+    private List<Leave> leaves;
 
     @ManyToOne
     private Collaborator collaborator;

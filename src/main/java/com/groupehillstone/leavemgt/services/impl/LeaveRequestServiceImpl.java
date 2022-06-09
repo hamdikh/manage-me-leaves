@@ -120,19 +120,11 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
             if(oldLeaveRequest.getFirstValidator() == null && oldLeaveRequest.getSecondValidator() == null) {
                 leaveRequestDTO.setFirstValidator(responseDTO.getValidator());
                 leaveRequestDTO.setCollaborator(responseDTO.getCollaborator());
-                leaveRequestDTO.setDescription(responseDTO.getDescription());
                 leaveRequestDTO.setStatus(responseDTO.getStatus());
-                leaveRequestDTO.setType(responseDTO.getType());
-                leaveRequestDTO.setStartDate(responseDTO.getStartDate());
-                leaveRequestDTO.setEndDate(responseDTO.getEndDate());
             } else if(oldLeaveRequest.getFirstValidator() != null && oldLeaveRequest.getSecondValidator() == null) {
                 leaveRequestDTO.setSecondValidator(responseDTO.getValidator());
                 leaveRequestDTO.setCollaborator(responseDTO.getCollaborator());
-                leaveRequestDTO.setDescription(responseDTO.getDescription());
                 leaveRequestDTO.setStatus(responseDTO.getStatus());
-                leaveRequestDTO.setType(responseDTO.getType());
-                leaveRequestDTO.setStartDate(responseDTO.getStartDate());
-                leaveRequestDTO.setEndDate(responseDTO.getEndDate());
             }
             leaveRequest = leaveRequestRepository.save(leaveRequestMapper.toEntity(leaveRequestDTO));
         } catch (final Exception e) {

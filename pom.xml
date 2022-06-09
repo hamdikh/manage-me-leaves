@@ -9,11 +9,11 @@
     </parent>
 
     <groupId>com.groupehillstone</groupId>
-    <artifactId>manage-me-training</artifactId>
+    <artifactId>manage-me-leaves</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
-    <name>manage-me-training</name>
-    <description>manage-me-training</description>
+    <name>manage-me-leaves</name>
+    <description>manage-me-leaves</description>
 
     <contributors>
         <contributor>

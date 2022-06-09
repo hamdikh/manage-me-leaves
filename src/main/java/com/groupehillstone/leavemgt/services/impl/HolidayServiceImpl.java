@@ -1,8 +1,10 @@
 package com.groupehillstone.leavemgt.services.impl;
 
+import com.groupehillstone.config.HolidaysConfig;
 import com.groupehillstone.leavemgt.entities.Holiday;
 import com.groupehillstone.leavemgt.repositories.HolidayRepository;
 import com.groupehillstone.leavemgt.services.HolidayService;
+import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,11 +29,20 @@ public class HolidayServiceImpl implements HolidayService {
     @Autowired
     private HolidayRepository holidayRepository;
 
-    public void getHolidaysFromAPI() throws IOException {
+    @Autowired
+    private HolidaysConfig holidaysConfig;
 
-        int year = LocalDate.now().getYear();
+    @Override
+    public void getHolidaysFromAPI(String zone, String year) throws IOException {
 
-        URL holidaysListURL = new URL("https://calendrier.api.gouv.fr/jours-feries/metropole/"+year+".json");
+        String currentYear = Integer.toString(LocalDate.now().getYear());
+        if(StringUtils.isBlank(year) || StringUtils.isEmpty(year)) {
+            year = currentYear;
+        }
+        if(StringUtils.isEmpty(zone) || StringUtils.isBlank(zone)) {
+            zone = holidaysConfig.getZone();
+        }
+        URL holidaysListURL = new URL(holidaysConfig.getBaseURL().concat("/").concat(zone).concat("/"+year).concat(holidaysConfig.getExtension()));
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(holidaysListURL.openStream()));
 
@@ -43,6 +54,9 @@ public class HolidayServiceImpl implements HolidayService {
             String key = it.next();
             holiday.setDate(LocalDate.parse(key, formatter));
             holiday.setDesignation((String) jo.get(key));
+            holiday.setZone(zone);
+            holiday.setYear(Integer.parseInt(year));
+            holiday.setId(UUID.randomUUID());
             holidayRepository.save(holiday);
         }
     }
@@ -115,10 +129,32 @@ public class HolidayServiceImpl implements HolidayService {
     public List<Holiday> findAllByYearAndEnabled(String year) {
         List<Holiday> holidays = null;
         try {
-            holidays = holidayRepository.findAllByYearAndEnabled(year);
+            holidays = holidayRepository.findAllByYearAndEnabled(Integer.parseInt(year));
         } catch (final Exception e) {
             logger.error("Error retrieving enabled holidays list for year : "+year, e);
         }
         return holidays;
+    }
+
+    @Override
+    public Holiday findHolidayById(UUID id) {
+        Holiday holiday = null;
+        try {
+            holiday = holidayRepository.findHolidayById(id);
+        } catch (final Exception e) {
+            logger.error("Error retrieving holiday by id : "+id, e);
+        }
+        return holiday;
+    }
+
+    @Override
+    public List<LocalDate> enabledHolidaysDate() {
+        List<LocalDate> holidaysList = null;
+        try {
+            holidaysList = holidayRepository.enabledHolidaysDate();
+        } catch (final Exception e) {
+            logger.error("Error retrieving holidays enabled list", e);
+        }
+        return holidaysList;
     }
 }
