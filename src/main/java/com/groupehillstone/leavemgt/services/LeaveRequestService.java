@@ -5,6 +5,7 @@ import com.groupehillstone.leavemgt.entities.LeaveRequest;
 import com.querydsl.core.types.Predicate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -30,8 +31,12 @@ public interface LeaveRequestService {
 
     void delete(UUID id);
 
-    List<LeaveRequest> searchWithCriteria(String status, String type, LocalDate startDate, LocalDate endDate);
+    List<LeaveRequest> searchWithCriteria(String status, String type, LocalDate createdAt);
 
-    List<LeaveRequest> searchWithCriteriaForCollaborator(UUID collaboratorId, String status, String type, LocalDate startDate, LocalDate endDate);
+    List<LeaveRequest> searchWithCriteriaForCollaborator(UUID collaboratorId, String status, String type, LocalDate createdAt);
+
+    LeaveRequest findLeaveRequestByLeaveId(UUID id);
+
+    Page<LeaveRequest> findLeaveRequestsBySalesManagerId(UUID id, Pageable pageable);
 
 }

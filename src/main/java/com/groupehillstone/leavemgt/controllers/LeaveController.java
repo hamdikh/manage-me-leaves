@@ -175,4 +175,23 @@ public class LeaveController {
         return response;
     }
 
+    @PostMapping("/add-new/{id}")
+    public ResponseEntity addNew(@RequestBody LeaveDTO leaveDTO, @PathVariable("id") UUID id) {
+        ResponseEntity response;
+        ErrorResponse errorResponse = null;
+        try {
+            errorResponse = leaveValidator.validate(leaveDTO);
+            if(errorResponse == null) {
+                leaveService.addNew(leaveMapper.toEntity(leaveDTO), id);
+                response = ResponseEntity.status(HttpStatus.OK).body(new SuccessResponse("DONE"));
+            } else {
+                response = ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+            }
+        } catch (final Exception e) {
+            logger.error("Error creating and adding new leave to leave request with id : "+id, e);
+            response = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e);
+        }
+        return response;
+    }
+
 }

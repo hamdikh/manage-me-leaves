@@ -70,8 +70,7 @@ public class LeaveRequestController {
                                          @RequestParam(defaultValue = "15") int size,
                                           @RequestParam(required = false) String status,
                                          @RequestParam(required = false) String type,
-                                         @RequestParam(required = false) String startDate,
-                                         @RequestParam(required = false) String endDate) {
+                                         @RequestParam(required = false) String createdAt) {
         ResponseEntity responseEntity;
         try {
             List<LeaveRequestDTO> leaveRequests;
@@ -79,24 +78,19 @@ public class LeaveRequestController {
 
             boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
             boolean typeCheck = StringUtils.isEmpty(type) && StringUtils.isBlank(type);
-            boolean startDateCheck = StringUtils.isEmpty(startDate) && StringUtils.isBlank(startDate);
-            boolean endDateCheck = StringUtils.isEmpty(endDate) && StringUtils.isBlank(endDate);
+            boolean createdAtCheck = StringUtils.isEmpty(createdAt) && StringUtils.isBlank(createdAt);
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDate formattedStartDate = null;
-            LocalDate formatterEndDate = null;
+            LocalDate formattedCreatedAt = null;
 
             Page<LeaveRequest> pageLeaveRequests = null;
-            if(statusCheck && typeCheck && startDateCheck && endDateCheck) {
+            if(statusCheck && typeCheck && createdAtCheck) {
                 pageLeaveRequests = leaveRequestService.findAll(paging);
             } else {
-                if(!startDateCheck) {
-                    formattedStartDate = LocalDate.parse(startDate, formatter);
+                if(!createdAtCheck) {
+                    formattedCreatedAt = LocalDate.parse(createdAt, formatter);
                 }
-                if(!endDateCheck) {
-                    formatterEndDate = LocalDate.parse(endDate, formatter);
-                }
-                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteria(status, type, formattedStartDate, formatterEndDate));
+                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteria(status, type, formattedCreatedAt));
             }
 
             leaveRequests = leaveRequestMapper.toDto(pageLeaveRequests.getContent());
@@ -120,8 +114,7 @@ public class LeaveRequestController {
                                             @RequestParam(defaultValue = "15") int size,
                                             @RequestParam(required = false) String status,
                                             @RequestParam(required = false) String type,
-                                            @RequestParam(required = false) String startDate,
-                                            @RequestParam(required = false) String endDate) {
+                                            @RequestParam(required = false) String createdAt) {
         ResponseEntity responseEntity;
         try {
             List<LeaveRequestDTO> leaveRequests;
@@ -129,24 +122,19 @@ public class LeaveRequestController {
 
             boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
             boolean typeCheck = StringUtils.isEmpty(type) && StringUtils.isBlank(type);
-            boolean startDateCheck = StringUtils.isEmpty(startDate) && StringUtils.isBlank(startDate);
-            boolean endDateCheck = StringUtils.isEmpty(endDate) && StringUtils.isBlank(endDate);
+            boolean createdAtCheck = StringUtils.isEmpty(createdAt);
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDate formattedStartDate = null;
-            LocalDate formatterEndDate = null;
+            LocalDate formattedCreatedAt = null;
 
             Page<LeaveRequest> pageLeaveRequests = null;
-            if(statusCheck && typeCheck && startDateCheck && endDateCheck) {
+            if(statusCheck && typeCheck && createdAtCheck) {
                 pageLeaveRequests = leaveRequestService.findLeaveRequestByCollaboratorId(id, paging);
             } else {
-                if(!startDateCheck) {
-                    formattedStartDate = LocalDate.parse(startDate, formatter);
+                if(!createdAtCheck) {
+                    formattedCreatedAt = LocalDate.parse(createdAt, formatter);
                 }
-                if(!endDateCheck) {
-                    formatterEndDate = LocalDate.parse(endDate, formatter);
-                }
-                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteriaForCollaborator(id, status, type, formattedStartDate, formatterEndDate));
+                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteriaForCollaborator(id, status, type, formattedCreatedAt));
             }
 
             leaveRequests = leaveRequestMapper.toDto(pageLeaveRequests.getContent());

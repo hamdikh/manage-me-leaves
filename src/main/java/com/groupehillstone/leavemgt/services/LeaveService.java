@@ -13,6 +13,8 @@ public interface LeaveService {
 
     List<Leave> createAll(List<Leave> leaves);
 
+    void addNew(Leave leave, UUID id);
+
     Leave update(Leave leave);
 
     void delete(UUID id);

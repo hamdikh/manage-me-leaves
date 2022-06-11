@@ -26,6 +26,9 @@ public class Collaborator extends AbstractAuditableEntity {
     private IdentityRole identityRole;
 
     @ManyToOne
-    private Collaborator commercialManager;
+    private BusinessUnit businessUnit;
+
+    @ManyToOne
+    private Collaborator salesManager;
 
 }

@@ -15,5 +15,7 @@ public class CollaboratorDTO extends AbstractAuditableEntityDTO {
 
     private String identityRole;
 
-    private CollaboratorDTO commercialManager;
+    private BusinessUnitDTO businessUnit;
+
+    private CollaboratorDTO salesManager;
 }

@@ -19,7 +19,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, UUID
 
     Page<LeaveRequest> findAll(Predicate predicate, Pageable pageable);
 
-    @Query("SELECT l FROM LeaveRequest l WHERE l.isDeleted = false")
+    @Query("SELECT l FROM LeaveRequest l WHERE l.isDeleted = false AND l.status <> 'DRAFT'")
     Page<LeaveRequest> findAll(Pageable pageable);
 
     @Query("SELECT l FROM LeaveRequest l WHERE l.isDeleted = false")
@@ -35,5 +35,11 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, UUID
     @Modifying
     @Query("UPDATE LeaveRequest l SET l.isDeleted = true WHERE l.id = :id")
     void delete(UUID id);
+
+    @Query(value = "SELECT * FROM public.leave_requests AS l INNER JOIN public.leave_requests_leaves AS ll ON ll.leave_request_id = l.id WHERE ll.leaves_id = :id", nativeQuery = true)
+    LeaveRequest findLeaveRequestByLeaveId(UUID id);
+
+    @Query(value = "SELECT l FROM LeaveRequest l WHERE l.isDeleted = false AND l.collaborator.salesManager.id = :id")
+    Page<LeaveRequest> findLeaveRequestsBySalesManagerId(UUID id, Pageable pageable);
 
 }

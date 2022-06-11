@@ -1,7 +1,9 @@
 package com.groupehillstone.leavemgt.services.impl;
 
 import com.groupehillstone.leavemgt.entities.Leave;
+import com.groupehillstone.leavemgt.entities.LeaveRequest;
 import com.groupehillstone.leavemgt.repositories.LeaveRepository;
+import com.groupehillstone.leavemgt.services.LeaveRequestService;
 import com.groupehillstone.leavemgt.services.LeaveService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +22,9 @@ public class LeaveServiceImpl implements LeaveService {
 
     @Autowired
     private LeaveRepository leaveRepository;
+
+    @Autowired
+    private LeaveRequestService leaveRequestService;
 
     @Override
     public Leave create(Leave leave) {
@@ -42,6 +47,18 @@ public class LeaveServiceImpl implements LeaveService {
     }
 
     @Override
+    public void addNew(Leave leave, UUID id) {
+        try {
+            leave = leaveRepository.save(leave);
+            LeaveRequest leaveRequest = leaveRequestService.findById(id);
+            leaveRequest.getLeaves().add(leave);
+            leaveRequestService.update(leaveRequest);
+        } catch (final Exception e) {
+            logger.error("Error creating leave and adding it to leave request leaves list", e);
+        }
+    }
+
+    @Override
     public Leave update(Leave leave) {
         try {
             leave = leaveRepository.save(leave);
@@ -55,7 +72,11 @@ public class LeaveServiceImpl implements LeaveService {
     public void delete(UUID id) {
         try {
             if(leaveRepository.existsById(id)) {
-                leaveRepository.delete(id);
+                LeaveRequest leaveRequest = leaveRequestService.findLeaveRequestByLeaveId(id);
+                Leave leave = leaveRepository.findLeaveById(id);
+                leaveRequest.getLeaves().remove(leave);
+                leaveRepository.deleteById(id);
+                leaveRequestService.update(leaveRequest);
             }
         } catch (final Exception e) {
             logger.error("Error deleting leave with id : "+id, e);
