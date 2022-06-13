@@ -5,6 +5,7 @@ import com.groupehillstone.leavemgt.entities.LeaveRequest;
 import com.querydsl.core.types.Predicate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
@@ -15,6 +16,7 @@ public interface LeaveRequestService {
 
     Page<LeaveRequest> findAll(Predicate predicate, Pageable pageable);
 
+    
     Page<LeaveRequest> findAll(Pageable pageable);
 
     List<LeaveRequest> findAll();
@@ -38,5 +40,17 @@ public interface LeaveRequestService {
     LeaveRequest findLeaveRequestByLeaveId(UUID id);
 
     Page<LeaveRequest> findLeaveRequestsBySalesManagerId(UUID id, Pageable pageable);
+
+    List<LeaveRequest> searchWithCriteriaForSales(UUID salesManagerId, String status, String type, LocalDate createdAt);
+
+    List<LeaveRequest> findLeaveRequestsByCollaboratorId(UUID id);
+
+    List<LeaveRequest> findLeaveRequestsByBusinessUnitId(UUID id);
+
+    List<LeaveRequest> findLeaveRequestsByBusinessUnitIdForBUM(UUID id);
+
+    List<LeaveRequest> findLeaveRequestsByTeamId(UUID id);
+
+    List<LeaveRequest> findLeaveRequestsByTeamIdForTL(UUID id);
 
 }

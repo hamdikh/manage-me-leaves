@@ -236,4 +236,93 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         }
         return leaveRequests;
     }
+
+    @Override
+    public List<LeaveRequest> searchWithCriteriaForSales(UUID salesManagerId, String status, String type, LocalDate createdAt) {
+        StringBuilder queryBuilder = new StringBuilder();
+        StringBuilder init = new StringBuilder("SELECT DISTINCT(l.*) FROM public.leave_requests AS l");
+        StringBuilder inner = new StringBuilder("");
+        StringBuilder condition = new StringBuilder(" WHERE l.is_deleted = 'false' AND l.status <> 'DRAFT'");
+
+        boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
+        boolean typeCheck = StringUtils.isEmpty(type) && StringUtils.isBlank(type);
+        boolean createdAtCheck = createdAt == null;
+
+        if(salesManagerId != null) {
+            inner.append(" INNER JOIN public.collaborators AS c ON c.id = l.collaborator_id");
+            condition.append(" AND c.sales_manager_id = '"+salesManagerId+"'");
+        }
+        if(!statusCheck) {
+            condition.append(" AND l.status = '"+status+"'");
+        }
+        if(!createdAtCheck) {
+            condition.append(" AND l.created_at >= '"+createdAt+"'");
+        }
+        if(!typeCheck) {
+            inner.append(" INNER JOIN public.leave_requests_leaves AS lrl ON lrl.leave_request_id = l.id " +
+                    "INNER JOIN public.leaves AS lv ON lv.id = lrl.leaves_id");
+            condition.append(" AND lv.type = '"+type+"'");
+        }
+
+        queryBuilder.append(init).append(inner).append(condition);
+
+        Query query = entityManager.createNativeQuery(queryBuilder.toString(), LeaveRequest.class);
+        List<LeaveRequest> leaveRequests = query.getResultList();
+        return leaveRequests;
+    }
+
+    @Override
+    public List<LeaveRequest> findLeaveRequestsByCollaboratorId(UUID id) {
+        List<LeaveRequest> leaveRequests = null;
+        try {
+            leaveRequests = leaveRequestRepository.findLeaveRequestsByCollaboratorId(id);
+        } catch (final Exception e) {
+            logger.error("Error retrieving leave requests list by collaborator id : "+id, e);
+        }
+        return leaveRequests;
+    }
+
+    @Override
+    public List<LeaveRequest> findLeaveRequestsByBusinessUnitId(UUID id) {
+        List<LeaveRequest> leaveRequests = null;
+        try {
+            leaveRequests = leaveRequestRepository.findLeaveRequestsByBusinessUnitId(id);
+        } catch (final Exception e) {
+            logger.error("Error retrieving leave requests list by collaborator id : "+id, e);
+        }
+        return leaveRequests;
+    }
+
+    @Override
+    public List<LeaveRequest> findLeaveRequestsByBusinessUnitIdForBUM(UUID id) {
+        List<LeaveRequest> leaveRequests = null;
+        try {
+            leaveRequests = leaveRequestRepository.findLeaveRequestsByBusinessUnitIdForBUM(id);
+        } catch (final Exception e) {
+            logger.error("Error retrieving leave requests list by collaborator id : "+id, e);
+        }
+        return leaveRequests;
+    }
+
+    @Override
+    public List<LeaveRequest> findLeaveRequestsByTeamId(UUID id) {
+        List<LeaveRequest> leaveRequests = null;
+        try {
+            leaveRequests = leaveRequestRepository.findLeaveRequestsByTeamId(id);
+        } catch (final Exception e) {
+            logger.error("Error retrieving leave requests list by collaborator id : "+id, e);
+        }
+        return leaveRequests;
+    }
+
+    @Override
+    public List<LeaveRequest> findLeaveRequestsByTeamIdForTL(UUID id) {
+        List<LeaveRequest> leaveRequests = null;
+        try {
+            leaveRequests = leaveRequestRepository.findLeaveRequestsByTeamIdForTL(id);
+        } catch (final Exception e) {
+            logger.error("Error retrieving leave requests list by collaborator id : "+id, e);
+        }
+        return leaveRequests;
+    }
 }

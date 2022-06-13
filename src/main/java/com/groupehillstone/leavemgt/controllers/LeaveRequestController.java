@@ -239,5 +239,74 @@ public class LeaveRequestController {
         return response;
     }
 
+    @GetMapping("/for-sales/{id}")
+    public ResponseEntity getLeaveRequestsBySalesManagerId(@PathVariable("id") UUID id,
+                                                           @RequestParam(defaultValue = "0") int page,
+                                                           @RequestParam(defaultValue = "15") int size,
+                                                           @RequestParam(required = false) String status,
+                                                           @RequestParam(required = false) String type,
+                                                           @RequestParam(required = false) String createdAt) {
+        ResponseEntity responseEntity;
+        try {
+            List<LeaveRequestDTO> leaveRequests;
+            Pageable paging = PageRequest.of(page, size);
+
+            boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
+            boolean typeCheck = StringUtils.isEmpty(type) && StringUtils.isBlank(type);
+            boolean createdAtCheck = StringUtils.isEmpty(createdAt) && StringUtils.isBlank(createdAt);
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate formattedCreatedAt = null;
+
+            Page<LeaveRequest> pageLeaveRequests = null;
+            if(statusCheck && typeCheck && createdAtCheck) {
+                pageLeaveRequests = leaveRequestService.findLeaveRequestsBySalesManagerId(id, paging);
+            } else {
+                if(!createdAtCheck) {
+                    formattedCreatedAt = LocalDate.parse(createdAt, formatter);
+                }
+                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteriaForSales(id, status, type, formattedCreatedAt));
+            }
+
+            leaveRequests = leaveRequestMapper.toDto(pageLeaveRequests.getContent());
+            Map<String, Object> response = new HashMap<>();
+            response.put("leaveRequests", leaveRequests);
+            response.put("currentPage", pageLeaveRequests.getNumber());
+            response.put("totalItems", pageLeaveRequests.getTotalElements());
+            response.put("totalPages", pageLeaveRequests.getTotalPages());
+            responseEntity = ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (final Exception e) {
+            logger.error("Error retrieving list ", e);
+            responseEntity = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e);
+        }
+        return responseEntity;
+
+    }
+
+    @GetMapping("/calendar/business-unit-manager/{id}")
+    public ResponseEntity getLeaveRequestsByCollaboratorId(@PathVariable("id") UUID id) {
+        ResponseEntity response;
+        try {
+            final List<LeaveRequestDTO> leaveRequests = leaveRequestMapper.toDto(leaveRequestService.findLeaveRequestsByCollaboratorId(id));
+            response = ResponseEntity.status(HttpStatus.OK).body(leaveRequests);
+        } catch (final Exception e) {
+            logger.error("Error retrieving leave request list for collaborator with id : "+id, e);
+            response = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e);
+        }
+        return response;
+    }
+
+    @GetMapping("/calendar/business-unit/{id}")
+    public ResponseEntity getLeaveRequestsByBusinessUnitId(@PathVariable("id") UUID id) {
+        ResponseEntity response;
+        try {
+            final List<LeaveRequestDTO> leaveRequests = leaveRequestMapper.toDto(leaveRequestService.findLeaveRequestsByBusinessUnitId(id));
+            response = ResponseEntity.status(HttpStatus.OK).body(leaveRequests);
+        } catch (final Exception e) {
+            logger.error("Error retrieving leave requests list by business unit id : "+id, e);
+            response = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e);
+        }
+        return response;
+    }
 
 }
