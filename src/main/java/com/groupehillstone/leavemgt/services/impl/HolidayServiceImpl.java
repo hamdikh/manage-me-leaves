@@ -9,6 +9,8 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -33,7 +35,33 @@ public class HolidayServiceImpl implements HolidayService {
     private HolidaysConfig holidaysConfig;
 
     @Override
-    public void getHolidaysFromAPI(String zone, String year) throws IOException {
+    public void syncHolidays(String zone) throws IOException {
+
+        if(StringUtils.isEmpty(zone) || StringUtils.isBlank(zone)) {
+            zone = holidaysConfig.getZone();
+        }
+        URL holidaysListURL = new URL(holidaysConfig.getBaseURL().concat("/").concat(zone).concat(holidaysConfig.getExtension()));
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(holidaysListURL.openStream()));
+
+        String inputLine = in.readLine();
+        Holiday holiday = new Holiday();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        JSONObject jo = new JSONObject(inputLine);
+        for (Iterator<String> it = jo.keys(); it.hasNext(); ) {
+            String key = it.next();
+            if(!holidayRepository.existsByDate(LocalDate.parse(key, formatter))) {
+                holiday.setDate(LocalDate.parse(key, formatter));
+                holiday.setDesignation((String) jo.get(key));
+                holiday.setZone(zone);
+                holiday.setId(UUID.randomUUID());
+                holidayRepository.save(holiday);
+            }
+        }
+    }
+
+    @Override
+    public void syncHolidaysByYear(String zone, String year) throws IOException {
 
         String currentYear = Integer.toString(LocalDate.now().getYear());
         if(StringUtils.isBlank(year) || StringUtils.isEmpty(year)) {
@@ -52,13 +80,36 @@ public class HolidayServiceImpl implements HolidayService {
         JSONObject jo = new JSONObject(inputLine);
         for (Iterator<String> it = jo.keys(); it.hasNext(); ) {
             String key = it.next();
-            holiday.setDate(LocalDate.parse(key, formatter));
-            holiday.setDesignation((String) jo.get(key));
-            holiday.setZone(zone);
-            holiday.setYear(Integer.parseInt(year));
-            holiday.setId(UUID.randomUUID());
-            holidayRepository.save(holiday);
+            if(!holidayRepository.existsByDate(LocalDate.parse(key, formatter))) {
+                holiday.setDate(LocalDate.parse(key, formatter));
+                holiday.setDesignation((String) jo.get(key));
+                holiday.setZone(zone);
+                holiday.setId(UUID.randomUUID());
+                holidayRepository.save(holiday);
+            }
         }
+    }
+
+    @Override
+    public Page<Holiday> findAllByYear(int year, Pageable pageable) {
+        Page<Holiday> holidays = null;
+        try {
+            holidays = holidayRepository.findAllByYear(year, pageable);
+        } catch (final Exception e) {
+            logger.error("Error retrieving pageable holidays list for year: "+year, e);
+        }
+        return holidays;
+    }
+
+    @Override
+    public Page<Holiday> findAll(Pageable pageable) {
+        Page<Holiday> holidays = null;
+        try {
+            holidays = holidayRepository.findAll(pageable);
+        } catch (final Exception e) {
+            logger.error("Error retrieving pageable holidays list ",e);
+        }
+        return holidays;
     }
 
     @Override
@@ -93,10 +144,10 @@ public class HolidayServiceImpl implements HolidayService {
     }
 
     @Override
-    public void enableHoliday(UUID id, String year) {
+    public void enableHoliday(UUID id) {
         try {
             if(holidayRepository.existsById(id)) {
-                holidayRepository.enableHoliday(id, year);
+                holidayRepository.enableHoliday(id);
             }
         } catch (final Exception e) {
             logger.error("Error enabling holiday with id : "+id, e);
@@ -104,10 +155,10 @@ public class HolidayServiceImpl implements HolidayService {
     }
 
     @Override
-    public void disableHoliday(UUID id, String year) {
+    public void disableHoliday(UUID id) {
         try {
             if(holidayRepository.existsById(id)) {
-                holidayRepository.disableHoliday(id, year);
+                holidayRepository.disableHoliday(id);
             }
         } catch (final Exception e) {
             logger.error("Error disbaling holiday with id : "+id, e);
@@ -137,6 +188,17 @@ public class HolidayServiceImpl implements HolidayService {
     }
 
     @Override
+    public List<Holiday> findAllByEnabled() {
+        List<Holiday> holidays = null;
+        try {
+            holidays = holidayRepository.findAllByEnabled();
+        } catch (final Exception e) {
+            logger.error("Error retrieving enabled holidays list : ", e);
+        }
+        return holidays;
+    }
+
+    @Override
     public Holiday findHolidayById(UUID id) {
         Holiday holiday = null;
         try {
@@ -156,5 +218,16 @@ public class HolidayServiceImpl implements HolidayService {
             logger.error("Error retrieving holidays enabled list", e);
         }
         return holidaysList;
+    }
+
+    @Override
+    public List<Integer> findHolidaysYears() {
+        List<Integer> yearsList = null;
+        try {
+            yearsList = holidayRepository.findHolidaysYears();
+        } catch (final Exception e) {
+            logger.error("Error retrieving holidays years list ",e);
+        }
+        return yearsList;
     }
 }

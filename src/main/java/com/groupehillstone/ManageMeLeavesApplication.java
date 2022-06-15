@@ -15,6 +15,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -24,6 +25,7 @@ import static com.nimbusds.jose.JWSAlgorithm.RS256;
 @ComponentScan(basePackages = {"com.groupehillstone.*"})
 @EntityScan(basePackages = {"com.groupehillstone.*"})
 @SpringBootApplication
+@EnableScheduling
 public class ManageMeLeavesApplication {
 
     @Autowired

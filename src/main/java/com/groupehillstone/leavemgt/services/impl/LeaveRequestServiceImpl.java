@@ -10,6 +10,7 @@ import com.groupehillstone.leavemgt.mapper.LeaveRequestMapper;
 import com.groupehillstone.leavemgt.repositories.LeaveRequestRepository;
 import com.groupehillstone.leavemgt.services.LeaveRequestService;
 import com.querydsl.core.types.Predicate;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -308,7 +309,9 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     public List<LeaveRequest> findLeaveRequestsByTeamId(UUID id) {
         List<LeaveRequest> leaveRequests = null;
         try {
-            leaveRequests = leaveRequestRepository.findLeaveRequestsByTeamId(id);
+            final List<LeaveRequest> leaveRequests1 = leaveRequestRepository.findLeaveRequestsByTeamId(id);
+            final List<LeaveRequest> leaveRequests2 = leaveRequestRepository.findLeaveRequestsByTeamIdForTL(id);
+            leaveRequests = ListUtils.union(leaveRequests1, leaveRequests2);
         } catch (final Exception e) {
             logger.error("Error retrieving leave requests list by collaborator id : "+id, e);
         }
@@ -316,12 +319,12 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     }
 
     @Override
-    public List<LeaveRequest> findLeaveRequestsByTeamIdForTL(UUID id) {
+    public List<LeaveRequest> findLeaveRequestsForTeam(UUID id) {
         List<LeaveRequest> leaveRequests = null;
         try {
-            leaveRequests = leaveRequestRepository.findLeaveRequestsByTeamIdForTL(id);
+            leaveRequests = leaveRequestRepository.findLeaveRequestsByTeamId(id);
         } catch (final Exception e) {
-            logger.error("Error retrieving leave requests list by collaborator id : "+id, e);
+            logger.error("Error retrieving leave requests list for team with id : "+id, e);
         }
         return leaveRequests;
     }

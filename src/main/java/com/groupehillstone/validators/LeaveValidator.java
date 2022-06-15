@@ -1,6 +1,7 @@
 package com.groupehillstone.validators;
 
 import com.groupehillstone.leavemgt.dto.LeaveDTO;
+import com.groupehillstone.leavemgt.dto.LeaveTypeDTO;
 import com.groupehillstone.leavemgt.enums.LeaveType;
 import com.groupehillstone.leavemgt.services.HolidayService;
 import com.groupehillstone.utils.ErrorResponse;
@@ -34,14 +35,10 @@ public class LeaveValidator {
         List<ErrorResponse.ValidationError> errors = new ArrayList<>();
         try {
             if(leaveDTO != null) {
-                String type = leaveDTO.getType();
+                LeaveTypeDTO type = leaveDTO.getType();
                 List<LocalDate> leaveDays = leaveDTO.getLeaveDays();
                 if(type == null) {
                     errors.add(new ErrorResponse.ValidationError("type", "TYPE_EMPTY"));
-                } else {
-                    if(!EnumUtils.isValidEnum(LeaveType.class, type)) {
-                        errors.add(new ErrorResponse.ValidationError("type", "TYPE_INVALID"));
-                    }
                 }
                 if(leaveDays.size() == 0) {
                     errors.add(new ErrorResponse.ValidationError("leaveDays", "LEAVE_DAYS_EMPTY"));

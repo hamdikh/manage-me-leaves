@@ -12,7 +12,7 @@ import java.util.List;
 @Setter
 public class LeaveDTO extends AbstractAuditableEntityDTO {
 
-    private String type;
+    private LeaveTypeDTO type;
 
     private String description;
 

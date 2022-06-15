@@ -16,7 +16,7 @@ public interface LeaveRequestService {
 
     Page<LeaveRequest> findAll(Predicate predicate, Pageable pageable);
 
-    
+
     Page<LeaveRequest> findAll(Pageable pageable);
 
     List<LeaveRequest> findAll();
@@ -51,6 +51,6 @@ public interface LeaveRequestService {
 
     List<LeaveRequest> findLeaveRequestsByTeamId(UUID id);
 
-    List<LeaveRequest> findLeaveRequestsByTeamIdForTL(UUID id);
+    List<LeaveRequest> findLeaveRequestsForTeam(UUID id);
 
 }

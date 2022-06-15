@@ -309,4 +309,30 @@ public class LeaveRequestController {
         return response;
     }
 
+    @GetMapping("/calendar/team-teamLeader/{id}")
+    public ResponseEntity getLeaveRequestsByTeamId(@PathVariable("id") UUID id) {
+        ResponseEntity response;
+        try {
+            final List<LeaveRequestDTO> leaveRequests = leaveRequestMapper.toDto(leaveRequestService.findLeaveRequestsByTeamId(id));
+            response = ResponseEntity.status(HttpStatus.OK).body(leaveRequests);
+        } catch (final Exception e) {
+            logger.error("Error retrieving leave request list by team id : "+id, e);
+            response = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e);
+        }
+        return response;
+    }
+
+    @GetMapping("/calendar/team/{id}")
+    public ResponseEntity getLeaveRequestsForTeam(@PathVariable("id") UUID id) {
+        ResponseEntity response;
+        try {
+            final List<LeaveRequestDTO> leaveRequests = leaveRequestMapper.toDto(leaveRequestService.findLeaveRequestsForTeam(id));
+            response = ResponseEntity.status(HttpStatus.OK).body(leaveRequests);
+        } catch (final Exception e) {
+            logger.error("Error retrieving leave requests for team with id : "+id, e);
+            response = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e);
+        }
+        return response;
+    }
+
 }

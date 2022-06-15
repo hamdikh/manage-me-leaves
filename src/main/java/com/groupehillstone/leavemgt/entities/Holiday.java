@@ -26,7 +26,4 @@ public class Holiday extends AbstractAuditableEntity {
     @Column(name = "zone")
     private String zone;
 
-    @Column(name = "year")
-    private int year;
-
 }

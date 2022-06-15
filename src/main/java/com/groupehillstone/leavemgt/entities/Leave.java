@@ -1,7 +1,6 @@
 package com.groupehillstone.leavemgt.entities;
 
 import com.groupehillstone.leavemgt.enums.LeaveStatus;
-import com.groupehillstone.leavemgt.enums.LeaveType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,8 +15,7 @@ import java.util.List;
 @Table(name = "leaves")
 public class Leave extends AbstractAuditableEntity {
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "type")
+    @ManyToOne
     private LeaveType type;
 
     @Column(name = "description", length = 10240)

@@ -17,6 +17,4 @@ public class HolidayDTO extends AbstractAuditableEntityDTO {
 
     private String zone;
 
-    private int year;
-
 }
