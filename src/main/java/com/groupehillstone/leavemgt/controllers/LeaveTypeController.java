@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -41,6 +42,7 @@ public class LeaveTypeController {
     private LeaveTypeValidator leaveTypeValidator;
 
     @GetMapping("/")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN') or hasRole('ROLE_BUSINESS_UNIT_MANAGER') or hasRole('ROLE_BUSINESS') or hasRole('ROLE_TEAM_MANAGER') or hasRole('ROLE_EMPLOYEE')")
     public ResponseEntity getAll() {
         ResponseEntity response = null;
         try {
@@ -54,6 +56,7 @@ public class LeaveTypeController {
     }
 
     @GetMapping("/all")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN')")
     public ResponseEntity getAllPageable(@RequestParam(defaultValue = "0") int page,
                                          @RequestParam(defaultValue = "15") int size) {
         ResponseEntity responseEntity;
@@ -78,6 +81,7 @@ public class LeaveTypeController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN')")
     public ResponseEntity getById(@PathVariable("id") UUID id) {
         ResponseEntity response;
         try {
@@ -91,11 +95,12 @@ public class LeaveTypeController {
     }
 
     @PostMapping("/")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN')")
     public ResponseEntity create(@RequestBody LeaveTypeDTO leaveTypeDTO) {
         ResponseEntity response;
         ErrorResponse errorResponse = null;
         try {
-            errorResponse = leaveTypeValidator.validate(leaveTypeDTO);
+            errorResponse = leaveTypeValidator.validateAdd(leaveTypeDTO);
             if(errorResponse == null) {
                 final LeaveType leaveType = leaveTypeService.create(leaveTypeMapper.toEntity(leaveTypeDTO));
                 response = ResponseEntity.status(HttpStatus.OK).body(leaveTypeMapper.toDto(leaveType));
@@ -103,18 +108,19 @@ public class LeaveTypeController {
                 response = ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
             }
         } catch (final Exception e) {
-            logger.error("Error creating leave type with name : "+leaveTypeDTO.getName(), e);
+            logger.error("Error creating leave type with wording : "+leaveTypeDTO.getWording(), e);
             response = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e);
         }
         return response;
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN')")
     public ResponseEntity update(@PathVariable("id") UUID id, @RequestBody LeaveTypeDTO leaveTypeDTO) {
         ResponseEntity response;
         ErrorResponse errorResponse = null;
         try {
-            errorResponse = leaveTypeValidator.validate(leaveTypeDTO);
+            errorResponse = leaveTypeValidator.validateUpdate(id, leaveTypeDTO);
             if(errorResponse == null) {
                 final LeaveType leaveType = leaveTypeService.update(leaveTypeMapper.toEntity(leaveTypeDTO));
                 response = ResponseEntity.status(HttpStatus.OK).body(leaveTypeMapper.toDto(leaveType));
@@ -129,6 +135,7 @@ public class LeaveTypeController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN')")
     public ResponseEntity delete(@PathVariable("id") UUID id) {
         ResponseEntity response;
         try {

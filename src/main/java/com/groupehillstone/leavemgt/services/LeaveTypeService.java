@@ -11,6 +11,8 @@ public interface LeaveTypeService {
 
     boolean existsByName(String name);
 
+    boolean existsByCode(String code);
+
     LeaveType create(LeaveType leaveType);
 
     LeaveType update(LeaveType leaveType);

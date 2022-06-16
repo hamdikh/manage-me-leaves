@@ -5,6 +5,7 @@ public enum IdentityRole {
     BUSINESS_UNIT_MANAGER,
     TEAM_MANAGER,
     EMPLOYEE,
-    BUSINESS
+    BUSINESS,
+    RH
 }
 

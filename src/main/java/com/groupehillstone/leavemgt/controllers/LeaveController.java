@@ -17,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -39,6 +40,7 @@ public class LeaveController {
     private LeaveValidator leaveValidator;
 
     @GetMapping("/")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN')")
     public ResponseEntity getAll() {
         ResponseEntity response;
         try {
@@ -52,6 +54,7 @@ public class LeaveController {
     }
 
     @GetMapping("/all")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN')")
     public ResponseEntity getAllPageable(@RequestParam(defaultValue = "0") int page,
                                          @RequestParam(defaultValue = "10") int size) {
         ResponseEntity responseEntity;
@@ -74,6 +77,7 @@ public class LeaveController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN') or hasRole('ROLE_BUSINESS_UNIT_MANAGER') or hasROle('ROLE_TEAM_MANAGER') or hasRole('ROLE_BUSINESS') or hasRole('ROLE_EMPLOYEE')")
     public ResponseEntity getById(@PathVariable("id") UUID id) {
         ResponseEntity response;
         try {
@@ -87,6 +91,7 @@ public class LeaveController {
     }
 
     @GetMapping("/leave-request/{id}")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN') or hasRole('ROLE_BUSINESS_UNIT_MANAGER') or hasRole('ROLE_TEAM_MANAGER') or hasRole('ROLE_BUSINESS') or hasRole('ROLE_EMPLOYEE')")
     public ResponseEntity getAllByLeaveRequestId(@PathVariable("id") UUID id) {
         ResponseEntity response;
         try {
@@ -100,6 +105,7 @@ public class LeaveController {
     }
 
     @PostMapping("/")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN') or hasRole('ROLE_BUSINESS_UNIT_MANAGER') or hasRole('ROLE_TEAM_MANAGER') or hasRole('ROLE_BUSINESS') or hasRole('ROLE_EMPLOYEE')")
     public ResponseEntity create(@RequestBody LeaveDTO leaveDTO) {
         ResponseEntity response;
         ErrorResponse errorResponse = null;
@@ -119,6 +125,7 @@ public class LeaveController {
     }
 
     @PostMapping("/all")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN') or hasRole('ROLE_BUSINESS_UNIT_MANAGER') or hasRole('ROLE_TEAM_MANAGER') or hasRole('ROLE_BUSINESS') or hasRole('ROLE_EMPLOYEE')")
     public ResponseEntity createAll(@RequestBody List<LeaveDTO> leaves) {
         ResponseEntity response;
         ErrorResponse errorResponse = null;
@@ -144,6 +151,7 @@ public class LeaveController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN') or hasRole('ROLE_BUSINESS_UNIT_MANAGER') or hasRole('ROLE_TEAM_MANAGER') or hasRole('ROLE_BUSINESS') or hasRole('ROLE_EMPLOYEE')")
     public ResponseEntity update(@PathVariable("id") UUID id, @RequestBody LeaveDTO leaveDTO) {
         ResponseEntity response;
         ErrorResponse errorResponse = null;
@@ -163,6 +171,7 @@ public class LeaveController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN') or hasRole('ROLE_BUSINESS_UNIT_MANAGER') or hasRole('ROLE_TEAM_MANAGER') or hasRole('ROLE_BUSINESS') or hasRole('ROLE_EMPLOYEE')")
     public ResponseEntity delete(@PathVariable("id") UUID id) {
         ResponseEntity response;
         try {
@@ -176,6 +185,7 @@ public class LeaveController {
     }
 
     @PostMapping("/add-new/{id}")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN') or hasRole('ROLE_BUSINESS_UNIT_MANAGER') or hasRole('ROLE_TEAM_MANAGER') or hasRole('ROLE_BUSINESS') or hasRole('ROLE_EMPLOYEE')")
     public ResponseEntity addNew(@RequestBody LeaveDTO leaveDTO, @PathVariable("id") UUID id) {
         ResponseEntity response;
         ErrorResponse errorResponse = null;

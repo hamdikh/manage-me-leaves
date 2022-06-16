@@ -7,6 +7,8 @@ import lombok.Setter;
 @Setter
 public class LeaveTypeDTO extends AbstractAuditableEntityDTO {
 
-    private String name;
+    private String wording;
+
+    private String code;
 
 }

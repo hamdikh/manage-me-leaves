@@ -13,7 +13,10 @@ import javax.persistence.Table;
 @Table(name = "leave_types")
 public class LeaveType extends AbstractAuditableEntity {
 
-    @Column(name = "name")
-    private String name;
+    @Column(name = "wording")
+    private String wording;
+
+    @Column(name = "code")
+    private String code;
 
 }

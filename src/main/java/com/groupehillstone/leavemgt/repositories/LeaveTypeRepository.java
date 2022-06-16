@@ -15,7 +15,9 @@ import java.util.UUID;
 @Repository
 public interface LeaveTypeRepository extends JpaRepository<LeaveType, UUID> {
 
-    boolean existsByName(String name);
+    boolean existsByWording(String wording);
+
+    boolean existsByCode(String code);
 
     @Query("SELECT l FROM LeaveType l WHERE l.isDeleted = false AND l.id = :id")
     LeaveType findLeaveTypeById(UUID id);

@@ -25,9 +25,20 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
     public boolean existsByName(String name) {
         boolean response = false;
         try {
-            response = leaveTypeRepository.existsByName(name);
+            response = leaveTypeRepository.existsByWording(name);
         } catch (final Exception e) {
             logger.error("Error checking name : "+name, e);
+        }
+        return response;
+    }
+
+    @Override
+    public boolean existsByCode(String code) {
+        boolean response = false;
+        try {
+            response = leaveTypeRepository.existsByCode(code);
+        } catch (final Exception e) {
+            logger.error("Error checking name : "+code, e);
         }
         return response;
     }
@@ -37,7 +48,7 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
         try {
             leaveType = leaveTypeRepository.save(leaveType);
         } catch (final Exception e) {
-            logger.error("Error creating type with name : "+leaveType.getName(), e);
+            logger.error("Error creating type with name : "+leaveType.getWording(), e);
         }
         return leaveType;
     }

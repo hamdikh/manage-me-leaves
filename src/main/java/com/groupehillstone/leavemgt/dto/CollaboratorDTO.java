@@ -17,5 +17,9 @@ public class CollaboratorDTO extends AbstractAuditableEntityDTO {
 
     private BusinessUnitDTO businessUnit;
 
+    private CollaboratorDTO manager;
+
     private CollaboratorDTO salesManager;
+
+    private JobDTO job;
 }

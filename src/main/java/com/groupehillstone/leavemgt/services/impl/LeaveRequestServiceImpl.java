@@ -153,14 +153,14 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     }
 
     @Override
-    public List<LeaveRequest> searchWithCriteria(String status, String type, LocalDate createdAt) {
+    public List<LeaveRequest> searchWithCriteria(String status, UUID typeId, LocalDate createdAt) {
         StringBuilder queryBuilder = new StringBuilder();
         StringBuilder init = new StringBuilder("SELECT DISTINCT(l.*) FROM public.leave_requests as l");
         StringBuilder inner = new StringBuilder("");
         StringBuilder condition = new StringBuilder(" WHERE l.is_deleted = 'false' AND l.status <> 'DRAFT'");
 
         boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
-        boolean typeCheck = StringUtils.isEmpty(type) && StringUtils.isBlank(type);
+        boolean typeIdCheck = typeId == null;
         boolean createdAtCheck = createdAt == null;
 
         if(!statusCheck) {
@@ -169,10 +169,10 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         if(!createdAtCheck) {
             condition.append(" AND l.createdAt >= '"+createdAt+"'");
         }
-        if(!typeCheck) {
-            inner.append("INNER JOIN public.leave_requests_leaves AS lrl ON lrl.leave_request_id = l.id " +
+        if(!typeIdCheck) {
+            inner.append(" INNER JOIN public.leave_requests_leaves AS lrl ON lrl.leave_request_id = l.id " +
                     "INNER JOIN public.leaves AS lv ON lv.id = lrl.leaves_id");
-            condition.append(" AND lv.type = '"+type+"'");
+            condition.append(" AND lv.type_id = '"+typeId+"'");
         }
 
         queryBuilder.append(init).append(inner).append(condition);
@@ -184,14 +184,14 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     }
 
     @Override
-    public List<LeaveRequest> searchWithCriteriaForCollaborator(UUID collaboratorId, String status, String type, LocalDate createdAt) {
+    public List<LeaveRequest> searchWithCriteriaForCollaborator(UUID collaboratorId, String status, UUID typeId, LocalDate createdAt) {
         StringBuilder queryBuilder = new StringBuilder();
         StringBuilder init = new StringBuilder("SELECT DISTINCT(l.*) FROM public.leave_requests as l");
         StringBuilder inner = new StringBuilder("");
         StringBuilder condition = new StringBuilder(" WHERE l.is_deleted = 'false'");
 
         boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
-        boolean typeCheck = StringUtils.isEmpty(type) && StringUtils.isBlank(type);
+        boolean typeIdCheck = typeId == null;
         boolean createdAtCheck = createdAt == null;
 
         if(collaboratorId != null) {
@@ -203,10 +203,10 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         if(!createdAtCheck) {
             condition.append(" AND l.created_at >= '"+createdAt+"'");
         }
-        if(!typeCheck) {
+        if(!typeIdCheck) {
             inner.append(" INNER JOIN public.leave_requests_leaves AS lrl ON lrl.leave_request_id = l.id " +
                     "INNER JOIN public.leaves AS lv ON lv.id = lrl.leaves_id");
-            condition.append(" AND lv.type = '"+type+"'");
+            condition.append(" AND lv.type_id = '"+typeId+"'");
         }
 
         queryBuilder.append(init).append(inner).append(condition);
@@ -239,19 +239,30 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     }
 
     @Override
-    public List<LeaveRequest> searchWithCriteriaForSales(UUID salesManagerId, String status, String type, LocalDate createdAt) {
+    public Page<LeaveRequest> findLeaveRequestsByManagerId(UUID id, Pageable pageable) {
+        Page<LeaveRequest> leaveRequests = null;
+        try {
+            leaveRequests = leaveRequestRepository.findLeaveRequestsByManagerId(id, pageable);
+        } catch (final Exception e) {
+            logger.error("Error retrieving pageable leave requests list for manager with id : "+id, e);
+        }
+        return leaveRequests;
+    }
+
+    @Override
+    public List<LeaveRequest> searchWithCriteriaForSales(UUID salesManagerId, String status, UUID typeId, LocalDate createdAt) {
         StringBuilder queryBuilder = new StringBuilder();
         StringBuilder init = new StringBuilder("SELECT DISTINCT(l.*) FROM public.leave_requests AS l");
         StringBuilder inner = new StringBuilder("");
         StringBuilder condition = new StringBuilder(" WHERE l.is_deleted = 'false' AND l.status <> 'DRAFT'");
 
         boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
-        boolean typeCheck = StringUtils.isEmpty(type) && StringUtils.isBlank(type);
+        boolean typeIdCheck = typeId == null;
         boolean createdAtCheck = createdAt == null;
 
         if(salesManagerId != null) {
             inner.append(" INNER JOIN public.collaborators AS c ON c.id = l.collaborator_id");
-            condition.append(" AND c.sales_manager_id = '"+salesManagerId+"'");
+            condition.append(" AND c.identity_role IN ('EMPLOYEE', 'TEAM_MANAGER') AND c.sales_manager_id = '"+salesManagerId+"'");
         }
         if(!statusCheck) {
             condition.append(" AND l.status = '"+status+"'");
@@ -259,10 +270,44 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         if(!createdAtCheck) {
             condition.append(" AND l.created_at >= '"+createdAt+"'");
         }
-        if(!typeCheck) {
+        if(!typeIdCheck) {
             inner.append(" INNER JOIN public.leave_requests_leaves AS lrl ON lrl.leave_request_id = l.id " +
                     "INNER JOIN public.leaves AS lv ON lv.id = lrl.leaves_id");
-            condition.append(" AND lv.type = '"+type+"'");
+            condition.append(" AND lv.type_id = '"+typeId+"'");
+        }
+
+        queryBuilder.append(init).append(inner).append(condition);
+
+        Query query = entityManager.createNativeQuery(queryBuilder.toString(), LeaveRequest.class);
+        List<LeaveRequest> leaveRequests = query.getResultList();
+        return leaveRequests;
+    }
+
+    @Override
+    public List<LeaveRequest> searchWithCriteriaForManager(UUID managerId, String status, UUID typeId, LocalDate createdAt) {
+        StringBuilder queryBuilder = new StringBuilder();
+        StringBuilder init = new StringBuilder("SELECT DISTINCT(l.*) FROM public.leave_requests AS l");
+        StringBuilder inner = new StringBuilder("");
+        StringBuilder condition = new StringBuilder(" WHERE l.is_deleted = 'false' AND l.status <> 'DRAFT'");
+
+        boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
+        boolean typeIdCheck = typeId == null;
+        boolean createdAtCheck = createdAt == null;
+
+        if(managerId != null) {
+            inner.append(" INNER JOIN public.collaborators AS c ON c.id = l.collaborator_id");
+            condition.append(" AND c.identity_role IN ('BUSINESS_UNIT_MANAGER', 'BUSINESS', 'RH', 'ADMIN') AND c.manager_id = '"+managerId+"'");
+        }
+        if(!statusCheck) {
+            condition.append(" AND l.status = '"+status+"'");
+        }
+        if(!createdAtCheck) {
+            condition.append(" AND l.created_at >= '"+createdAt+"'");
+        }
+        if(!typeIdCheck) {
+            inner.append(" INNER JOIN public.leave_requests_leaves AS lrl ON lrl.leave_request_id = l.id " +
+                    "INNER JOIN public.leaves AS lv ON lv.id = lrl.leaves_id");
+            condition.append(" AND lv.type_id = '"+typeId+"'");
         }
 
         queryBuilder.append(init).append(inner).append(condition);

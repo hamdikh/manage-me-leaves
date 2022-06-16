@@ -51,7 +51,7 @@ public class LeaveRequestController {
     private UUIDMapper uuidMapper;
 
     @GetMapping("/")
-    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_BUSINESS')")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_BUSINESS')")
     public ResponseEntity getAll() {
         ResponseEntity response;
         try {
@@ -65,11 +65,11 @@ public class LeaveRequestController {
     }
 
     @GetMapping("/all")
-    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_BUSINESS')")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_BUSINESS')")
     public ResponseEntity getAllPageable(@RequestParam(defaultValue = "0") int page,
                                          @RequestParam(defaultValue = "15") int size,
                                           @RequestParam(required = false) String status,
-                                         @RequestParam(required = false) String type,
+                                         @RequestParam(required = false) String typeId,
                                          @RequestParam(required = false) String createdAt) {
         ResponseEntity responseEntity;
         try {
@@ -77,20 +77,24 @@ public class LeaveRequestController {
             Pageable paging = PageRequest.of(page, size);
 
             boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
-            boolean typeCheck = StringUtils.isEmpty(type) && StringUtils.isBlank(type);
+            boolean typeIdCheck = StringUtils.isEmpty(typeId) && StringUtils.isBlank(typeId);
             boolean createdAtCheck = StringUtils.isEmpty(createdAt) && StringUtils.isBlank(createdAt);
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate formattedCreatedAt = null;
 
             Page<LeaveRequest> pageLeaveRequests = null;
-            if(statusCheck && typeCheck && createdAtCheck) {
+            if(statusCheck && typeIdCheck && createdAtCheck) {
                 pageLeaveRequests = leaveRequestService.findAll(paging);
             } else {
+                UUID uuidType = null;
                 if(!createdAtCheck) {
                     formattedCreatedAt = LocalDate.parse(createdAt, formatter);
                 }
-                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteria(status, type, formattedCreatedAt));
+                if(StringUtils.isNotBlank(typeId) && StringUtils.isNotEmpty(typeId)) {
+                    uuidType = uuidMapper.stringToUUID(typeId);
+                }
+                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteria(status, uuidType, formattedCreatedAt));
             }
 
             leaveRequests = leaveRequestMapper.toDto(pageLeaveRequests.getContent());
@@ -108,12 +112,12 @@ public class LeaveRequestController {
     }
 
     @GetMapping("/all/collaborator/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_BUSINESS') or hasRole('ROLE_BUSINESS_UNIT_MANAGER') or hasRole('ROLE_TEAM_MANAGER') or hasRole('ROLE_EMPLOYEE')")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_RH') or hasRole('ROLE_BUSINESS') or hasRole('ROLE_BUSINESS_UNIT_MANAGER') or hasRole('ROLE_TEAM_MANAGER') or hasRole('ROLE_EMPLOYEE')")
     public ResponseEntity getAllPageableForCollaborator(@PathVariable("id") UUID id,
                                             @RequestParam(defaultValue = "0") int page,
                                             @RequestParam(defaultValue = "15") int size,
                                             @RequestParam(required = false) String status,
-                                            @RequestParam(required = false) String type,
+                                            @RequestParam(required = false) String typeId,
                                             @RequestParam(required = false) String createdAt) {
         ResponseEntity responseEntity;
         try {
@@ -121,20 +125,24 @@ public class LeaveRequestController {
             Pageable paging = PageRequest.of(page, size);
 
             boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
-            boolean typeCheck = StringUtils.isEmpty(type) && StringUtils.isBlank(type);
+            boolean typeIdCheck = StringUtils.isEmpty(typeId) && StringUtils.isBlank(typeId);
             boolean createdAtCheck = StringUtils.isEmpty(createdAt);
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate formattedCreatedAt = null;
 
             Page<LeaveRequest> pageLeaveRequests = null;
-            if(statusCheck && typeCheck && createdAtCheck) {
+            if(statusCheck && typeIdCheck && createdAtCheck) {
                 pageLeaveRequests = leaveRequestService.findLeaveRequestByCollaboratorId(id, paging);
             } else {
+                UUID uuidType = null;
                 if(!createdAtCheck) {
                     formattedCreatedAt = LocalDate.parse(createdAt, formatter);
                 }
-                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteriaForCollaborator(id, status, type, formattedCreatedAt));
+                if(StringUtils.isNotBlank(typeId) && StringUtils.isNotEmpty(typeId)) {
+                    uuidType = uuidMapper.stringToUUID(typeId);
+                }
+                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteriaForCollaborator(id, status, uuidType, formattedCreatedAt));
             }
 
             leaveRequests = leaveRequestMapper.toDto(pageLeaveRequests.getContent());
@@ -152,7 +160,7 @@ public class LeaveRequestController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_BUSINESS') or hasRole('ROLE_BUSINESS_UNIT_MANAGER') or hasRole('ROLE_TEAM_MANAGER') or hasRole('ROLE_EMPLOYEE')")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_RH') or hasRole('ROLE_BUSINESS') or hasRole('ROLE_BUSINESS_UNIT_MANAGER') or hasRole('ROLE_TEAM_MANAGER') or hasRole('ROLE_EMPLOYEE')")
     public ResponseEntity getById(@PathVariable("id") UUID id) {
         ResponseEntity response;
         try {
@@ -166,7 +174,7 @@ public class LeaveRequestController {
     }
 
     @PostMapping("/")
-    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_BUSINESS') or hasRole('ROLE_BUSINESS_UNIT_MANAGER') or hasRole('ROLE_TEAM_MANAGER') or hasRole('ROLE_EMPLOYEE')")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_RH') or hasRole('ROLE_BUSINESS') or hasRole('ROLE_BUSINESS_UNIT_MANAGER') or hasRole('ROLE_TEAM_MANAGER') or hasRole('ROLE_EMPLOYEE')")
     public ResponseEntity create(@RequestBody LeaveRequestDTO leaveRequestDTO) {
         ResponseEntity response;
         ErrorResponse errorResponse = null;
@@ -186,7 +194,7 @@ public class LeaveRequestController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_BUSINESS') or hasRole('ROLE_BUSINESS_UNIT_MANAGER') or hasRole('ROLE_TEAM_MANAGER') or hasRole('ROLE_EMPLOYEE')")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_RH') or hasRole('ROLE_BUSINESS') or hasRole('ROLE_BUSINESS_UNIT_MANAGER') or hasRole('ROLE_TEAM_MANAGER') or hasRole('ROLE_EMPLOYEE')")
     public ResponseEntity update(@PathVariable("id") UUID id, @RequestBody LeaveRequestDTO leaveRequestDTO) {
         ResponseEntity response = null;
         ErrorResponse errorResponse = null;
@@ -206,7 +214,7 @@ public class LeaveRequestController {
     }
 
     @PutMapping("/response/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_BUSINESS')")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_RH') or hasRole('ROLE_BUSINESS')")
     public ResponseEntity response(@PathVariable("id") UUID id, @RequestBody ResponseDTO responseDTO) {
         ResponseEntity response = null;
         ErrorResponse errorResponse = null;
@@ -226,7 +234,7 @@ public class LeaveRequestController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_BUSINESS') or hasRole('ROLE_BUSINESS_UNIT_MANAGER') or hasRole('ROLE_TEAM_MANAGER') or hasRole('ROLE_EMPLOYEE')")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_RH') or hasRole('ROLE_BUSINESS') or hasRole('ROLE_BUSINESS_UNIT_MANAGER') or hasRole('ROLE_TEAM_MANAGER') or hasRole('ROLE_EMPLOYEE')")
     public ResponseEntity delete(@PathVariable("id") UUID id) {
         ResponseEntity response;
         try {
@@ -240,11 +248,12 @@ public class LeaveRequestController {
     }
 
     @GetMapping("/for-sales/{id}")
+    @PreAuthorize("hasRole('ROLE_BUSINESS')")
     public ResponseEntity getLeaveRequestsBySalesManagerId(@PathVariable("id") UUID id,
                                                            @RequestParam(defaultValue = "0") int page,
                                                            @RequestParam(defaultValue = "15") int size,
                                                            @RequestParam(required = false) String status,
-                                                           @RequestParam(required = false) String type,
+                                                           @RequestParam(required = false) String typeId,
                                                            @RequestParam(required = false) String createdAt) {
         ResponseEntity responseEntity;
         try {
@@ -252,20 +261,73 @@ public class LeaveRequestController {
             Pageable paging = PageRequest.of(page, size);
 
             boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
-            boolean typeCheck = StringUtils.isEmpty(type) && StringUtils.isBlank(type);
+            boolean typeIdCheck = StringUtils.isEmpty(typeId) && StringUtils.isBlank(typeId);
             boolean createdAtCheck = StringUtils.isEmpty(createdAt) && StringUtils.isBlank(createdAt);
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate formattedCreatedAt = null;
 
             Page<LeaveRequest> pageLeaveRequests = null;
-            if(statusCheck && typeCheck && createdAtCheck) {
+            if(statusCheck && typeIdCheck && createdAtCheck) {
                 pageLeaveRequests = leaveRequestService.findLeaveRequestsBySalesManagerId(id, paging);
             } else {
+                UUID uuidType = null;
                 if(!createdAtCheck) {
                     formattedCreatedAt = LocalDate.parse(createdAt, formatter);
                 }
-                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteriaForSales(id, status, type, formattedCreatedAt));
+                if(StringUtils.isNotEmpty(typeId) && StringUtils.isNotBlank(typeId)) {
+                    uuidType = uuidMapper.stringToUUID(typeId);
+                }
+                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteriaForSales(id, status, uuidType, formattedCreatedAt));
+            }
+
+            leaveRequests = leaveRequestMapper.toDto(pageLeaveRequests.getContent());
+            Map<String, Object> response = new HashMap<>();
+            response.put("leaveRequests", leaveRequests);
+            response.put("currentPage", pageLeaveRequests.getNumber());
+            response.put("totalItems", pageLeaveRequests.getTotalElements());
+            response.put("totalPages", pageLeaveRequests.getTotalPages());
+            responseEntity = ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (final Exception e) {
+            logger.error("Error retrieving list ", e);
+            responseEntity = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e);
+        }
+        return responseEntity;
+
+    }
+
+    @GetMapping("/for-manager/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_RH')")
+    public ResponseEntity getLeaveRequestsByManagerId(@PathVariable("id") UUID id,
+                                                           @RequestParam(defaultValue = "0") int page,
+                                                           @RequestParam(defaultValue = "15") int size,
+                                                           @RequestParam(required = false) String status,
+                                                           @RequestParam(required = false) String typeId,
+                                                           @RequestParam(required = false) String createdAt) {
+        ResponseEntity responseEntity;
+        try {
+            List<LeaveRequestDTO> leaveRequests;
+            Pageable paging = PageRequest.of(page, size);
+
+            boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
+            boolean typeIdCheck = StringUtils.isEmpty(typeId) && StringUtils.isBlank(typeId);
+            boolean createdAtCheck = StringUtils.isEmpty(createdAt) && StringUtils.isBlank(createdAt);
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate formattedCreatedAt = null;
+
+            Page<LeaveRequest> pageLeaveRequests = null;
+            if(statusCheck && typeIdCheck && createdAtCheck) {
+                pageLeaveRequests = leaveRequestService.findLeaveRequestsByManagerId(id, paging);
+            } else {
+                UUID uuidType = null;
+                if(!createdAtCheck) {
+                    formattedCreatedAt = LocalDate.parse(createdAt, formatter);
+                }
+                if(StringUtils.isNotEmpty(typeId) && StringUtils.isNotBlank(typeId)) {
+                    uuidType = uuidMapper.stringToUUID(typeId);
+                }
+                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteriaForManager(id, status, uuidType, formattedCreatedAt));
             }
 
             leaveRequests = leaveRequestMapper.toDto(pageLeaveRequests.getContent());
@@ -284,6 +346,7 @@ public class LeaveRequestController {
     }
 
     @GetMapping("/calendar/business-unit-manager/{id}")
+    @PreAuthorize("hasRole('ROLE_BUSINESS') or hasRole('ROLE_BUSINESS_UNIT_MANAGER') or hasRole('ROLE_TEAM_MANAGER') or hasRole('ROLE_ADMIN') or hasRole('ROLE_RH')")
     public ResponseEntity getLeaveRequestsByCollaboratorId(@PathVariable("id") UUID id) {
         ResponseEntity response;
         try {
@@ -297,6 +360,7 @@ public class LeaveRequestController {
     }
 
     @GetMapping("/calendar/business-unit/{id}")
+    @PreAuthorize("hasRole('ROLE_BUSINESS') or hasRole('ROLE_BUSINESS_UNIT_MANAGER') or hasRole('ROLE_TEAM_MANAGER') or hasRole('ROLE_ADMIN') or hasRole('ROLE_RH')")
     public ResponseEntity getLeaveRequestsByBusinessUnitId(@PathVariable("id") UUID id) {
         ResponseEntity response;
         try {
@@ -310,6 +374,7 @@ public class LeaveRequestController {
     }
 
     @GetMapping("/calendar/team-teamLeader/{id}")
+    @PreAuthorize("hasRole('ROLE_BUSINESS') or hasRole('ROLE_BUSINESS_UNIT_MANAGER') or hasRole('ROLE_TEAM_MANAGER') or hasRole('ROLE_ADMIN') or hasRole('ROLE_RH')")
     public ResponseEntity getLeaveRequestsByTeamId(@PathVariable("id") UUID id) {
         ResponseEntity response;
         try {
@@ -323,6 +388,7 @@ public class LeaveRequestController {
     }
 
     @GetMapping("/calendar/team/{id}")
+    @PreAuthorize("hasRole('ROLE_BUSINESS') or hasRole('ROLE_BUSINESS_UNIT_MANAGER') or hasRole('ROLE_TEAM_MANAGER') or hasRole('ROLE_ADMIN') or hasRole('ROLE_RH')")
     public ResponseEntity getLeaveRequestsForTeam(@PathVariable("id") UUID id) {
         ResponseEntity response;
         try {

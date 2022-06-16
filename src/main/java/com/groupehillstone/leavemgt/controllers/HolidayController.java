@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -36,6 +37,7 @@ public class HolidayController {
     private HolidayMapper holidayMapper;
 
     @GetMapping("/enable/{id}")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ADMIN')")
     public ResponseEntity enableHoliday(@PathVariable("id") UUID id) {
         ResponseEntity response;
         try {
@@ -49,6 +51,7 @@ public class HolidayController {
     }
 
     @GetMapping("/disable/{id}")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ADMIN')")
     public ResponseEntity disableHoliday(@PathVariable("id") UUID id) {
         ResponseEntity response;
         try {
@@ -62,6 +65,7 @@ public class HolidayController {
     }
 
     @GetMapping("/all/year")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN')")
     public ResponseEntity getAllByYearPageable(@RequestParam int year,
                                                @RequestParam(defaultValue = "0") int page,
                                                @RequestParam(defaultValue = "15") int size) {
@@ -92,6 +96,7 @@ public class HolidayController {
     }
 
     @GetMapping("/year/{year}")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN')")
     public ResponseEntity getAllByYear(@PathVariable("year") String year) {
         ResponseEntity response;
         try {
@@ -105,6 +110,7 @@ public class HolidayController {
     }
 
     @GetMapping("/enabled/year/{year}")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN') or hasRole('ROLE_BUSINESS') or hasRole('ROLE_TEAM_MANAGER') or hasRole('ROLE_BUSINESS_UNIT_MANAGER') or hasRole('ROLE_EMPLOYEE')")
     public ResponseEntity getAllByYearAndEnabled(@PathVariable("year") String year) {
         ResponseEntity response;
         try {
@@ -118,6 +124,7 @@ public class HolidayController {
     }
 
     @GetMapping("/enabled")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN') or hasRole('ROLE_BUSINESS_UNIT_MANAGER') or hasRole('ROLE_TEAM_MANAGER') or hasRole('ROLE_BUSINESS') or hasRole('ROLE_EMPLOYEE')")
     public ResponseEntity getAllByEnabled() {
         ResponseEntity response;
         try {
@@ -131,6 +138,7 @@ public class HolidayController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN')")
     public ResponseEntity getById(@PathVariable("id") UUID id) {
         ResponseEntity response;
         try {
@@ -144,6 +152,7 @@ public class HolidayController {
     }
 
     @GetMapping("/sync-holidays/year")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN')")
     public ResponseEntity getAndInsertHolidays(@RequestParam(defaultValue = "metropole") String zone,
                                                @RequestParam(required = false) String year) {
         ResponseEntity response;
@@ -158,6 +167,7 @@ public class HolidayController {
     }
 
     @GetMapping("/sync-holidays")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN')")
     public ResponseEntity syncAllPossibleHolidays(@RequestParam(defaultValue = "metropole") String zone) {
         ResponseEntity response;
         try {
@@ -171,6 +181,7 @@ public class HolidayController {
     }
 
     @GetMapping("/holidays-years")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN')")
     public ResponseEntity getHolidaysYears() {
         ResponseEntity response;
         try {

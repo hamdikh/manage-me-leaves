@@ -29,6 +29,12 @@ public class Collaborator extends AbstractAuditableEntity {
     private BusinessUnit businessUnit;
 
     @ManyToOne
+    private Collaborator manager;
+
+    @ManyToOne
     private Collaborator salesManager;
+
+    @ManyToOne
+    private Job job;
 
 }

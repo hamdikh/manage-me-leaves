@@ -13,4 +13,7 @@ public interface CollaboratorRepository extends JpaRepository<Collaborator, UUID
     @Query("SELECT c FROM Collaborator c WHERE c.isDeleted = false AND c.email = :email")
     Collaborator findByEmail(String email);
 
+    @Query("SELECT c FROM Collaborator c WHERE c.isDeleted = false AND c.id = :id")
+    Collaborator findCollaboratorById(UUID id);
+
 }
