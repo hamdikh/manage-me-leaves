@@ -136,7 +136,7 @@ public class LeaveRequestValidator {
                                     errors.add(new ErrorResponse.ValidationError("validator", "VALIDATOR_EMPTY"));
                                 } else {
                                     if(collaborator.getIdentityRole().equals(IdentityRole.TEAM_MANAGER) || collaborator.getIdentityRole().equals(IdentityRole.EMPLOYEE)) {
-                                        if(!validator.getIdentityRole().equals(IdentityRole.RH) && !(validator.getIdentityRole().equals(IdentityRole.BUSINESS) && validator.getJob().getRank() == 1)) {
+                                        if(!validator.getIdentityRole().equals(IdentityRole.RH) && !(validator.getIdentityRole().equals(IdentityRole.BUSINESS) && collaborator.getSalesManager().getId().equals(validator.getId()))) {
                                             errors.add(new ErrorResponse.ValidationError("validator", "VALIDATOR_NOT_ALLOWED"));
                                         }
                                     } else {
@@ -165,7 +165,7 @@ public class LeaveRequestValidator {
                                     errors.add(new ErrorResponse.ValidationError("validator", "VALIDATOR_EMPTY"));
                                 } else {
                                     if(collaborator.getIdentityRole().equals(IdentityRole.TEAM_MANAGER.toString()) || collaborator.getIdentityRole().equals(IdentityRole.EMPLOYEE.toString())) {
-                                        if(!validator.getIdentityRole().equals(IdentityRole.RH.toString()) && !(validator.getIdentityRole().equals(IdentityRole.BUSINESS) && validator.getJob().getRank() == 1)) {
+                                        if(!validator.getIdentityRole().equals(IdentityRole.RH.toString()) && !(validator.getIdentityRole().equals(IdentityRole.BUSINESS) && collaborator.getSalesManager().getId().equals(validator.getId()))) {
                                             errors.add(new ErrorResponse.ValidationError("validator", "VALIDATOR_NOT_ALLOWED"));
                                         }
                                     } else {
