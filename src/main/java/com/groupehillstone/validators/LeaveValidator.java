@@ -2,10 +2,12 @@ package com.groupehillstone.validators;
 
 import com.groupehillstone.leavemgt.dto.LeaveDTO;
 import com.groupehillstone.leavemgt.dto.LeaveTypeDTO;
+import com.groupehillstone.leavemgt.enums.LeaveTime;
 import com.groupehillstone.leavemgt.enums.LeaveType;
 import com.groupehillstone.leavemgt.services.HolidayService;
 import com.groupehillstone.utils.ErrorResponse;
 import com.groupehillstone.utils.ErrorUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.EnumUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,7 @@ import org.springframework.util.CollectionUtils;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,7 +39,7 @@ public class LeaveValidator {
         try {
             if(leaveDTO != null) {
                 LeaveTypeDTO type = leaveDTO.getType();
-                List<LocalDate> leaveDays = leaveDTO.getLeaveDays();
+                Map<LocalDate, String> leaveDays = leaveDTO.getLeaveDays();
                 if(type == null) {
                     errors.add(new ErrorResponse.ValidationError("type", "TYPE_EMPTY"));
                 }
@@ -45,7 +48,7 @@ public class LeaveValidator {
                 } else {
                     List<LocalDate> holidaysList = null;
                     holidaysList = holidayService.enabledHolidaysDate();
-                    for(LocalDate date : leaveDays) {
+                    for(LocalDate date : leaveDays.keySet()) {
                         Pattern DATE_PATTERN = Pattern.compile(regExpDate);
                         Matcher matcher = DATE_PATTERN.matcher(date.toString());
                         if(!matcher.matches()) {
@@ -53,6 +56,15 @@ public class LeaveValidator {
                         } else {
                             if(holidaysList.contains(date)) {
                             errors.add(new ErrorResponse.ValidationError("leaveDays", "LEAVE_DAYS_HOLIDAY "+date));
+                            }
+                        }
+                    }
+                    for(String time : leaveDays.values()) {
+                        if(StringUtils.isEmpty(time) || StringUtils.isBlank(time)) {
+                            errors.add(new ErrorResponse.ValidationError("leaveDays", "TIME_EMPTY"));
+                        } else {
+                            if(!EnumUtils.isValidEnum(LeaveTime.class, time)) {
+                                errors.add(new ErrorResponse.ValidationError("leaveDays", "TIME_INVALID "));
                             }
                         }
                     }

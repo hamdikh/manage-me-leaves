@@ -1,13 +1,16 @@
 package com.groupehillstone.leavemgt.entities;
 
 import com.groupehillstone.leavemgt.enums.LeaveStatus;
+import com.groupehillstone.leavemgt.enums.LeaveTime;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -22,8 +25,9 @@ public class Leave extends AbstractAuditableEntity {
     private String description;
 
     @ElementCollection
+    @Enumerated(EnumType.STRING)
     @Column(name = "leave_days")
-    private List<LocalDate> leaveDays = new ArrayList<>();
+    private Map<LocalDate, LeaveTime> leaveDays = new HashMap<>();
 
     @ManyToOne
     private LeaveRequest leaveRequest;
