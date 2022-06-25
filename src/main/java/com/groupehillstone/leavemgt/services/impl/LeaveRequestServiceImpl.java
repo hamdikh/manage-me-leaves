@@ -153,7 +153,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     }
 
     @Override
-    public List<LeaveRequest> searchWithCriteria(String status, UUID typeId, LocalDate createdAt) {
+    public List<LeaveRequest> searchWithCriteria(String status, UUID typeId, LocalDate createdAt, UUID businessUnitId) {
         StringBuilder queryBuilder = new StringBuilder();
         StringBuilder init = new StringBuilder("SELECT DISTINCT(l.*) FROM public.leave_requests as l");
         StringBuilder inner = new StringBuilder("");
@@ -162,6 +162,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
         boolean typeIdCheck = typeId == null;
         boolean createdAtCheck = createdAt == null;
+        boolean businessUnitIdCheck = businessUnitId == null;
 
         if(!statusCheck) {
             condition.append(" AND l.status = '"+status+"'");
@@ -173,6 +174,10 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
             inner.append(" INNER JOIN public.leave_requests_leaves AS lrl ON lrl.leave_request_id = l.id " +
                     "INNER JOIN public.leaves AS lv ON lv.id = lrl.leaves_id");
             condition.append(" AND lv.type_id = '"+typeId+"'");
+        }
+        if(!businessUnitIdCheck) {
+            inner.append(" INNER JOIN public.collaborators AS c ON c.id = l.collaborator_id");
+            condition.append(" AND c.business_unit_id = '"+businessUnitId+"'");
         }
 
         queryBuilder.append(init).append(inner).append(condition);
@@ -250,7 +255,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     }
 
     @Override
-    public List<LeaveRequest> searchWithCriteriaForSales(UUID salesManagerId, String status, UUID typeId, LocalDate createdAt) {
+    public List<LeaveRequest> searchWithCriteriaForSales(UUID salesManagerId, String status, UUID typeId, LocalDate createdAt, UUID businessUnitId) {
         StringBuilder queryBuilder = new StringBuilder();
         StringBuilder init = new StringBuilder("SELECT DISTINCT(l.*) FROM public.leave_requests AS l");
         StringBuilder inner = new StringBuilder("");
@@ -259,10 +264,16 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
         boolean typeIdCheck = typeId == null;
         boolean createdAtCheck = createdAt == null;
+        boolean businessUnitIdCheck = businessUnitId == null;
 
-        if(salesManagerId != null) {
+        if(salesManagerId != null || !businessUnitIdCheck) {
             inner.append(" INNER JOIN public.collaborators AS c ON c.id = l.collaborator_id");
-            condition.append(" AND c.identity_role IN ('EMPLOYEE', 'TEAM_MANAGER') AND c.sales_manager_id = '"+salesManagerId+"'");
+            if(salesManagerId != null) {
+                condition.append(" AND c.identity_role IN ('EMPLOYEE', 'TEAM_MANAGER') AND c.sales_manager_id = '"+salesManagerId+"'");
+            }
+            if(!businessUnitIdCheck) {
+                condition.append(" AND c.business_unit_id = '"+businessUnitId+"'");
+            }
         }
         if(!statusCheck) {
             condition.append(" AND l.status = '"+status+"'");
@@ -284,7 +295,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     }
 
     @Override
-    public List<LeaveRequest> searchWithCriteriaForManager(UUID managerId, String status, UUID typeId, LocalDate createdAt) {
+    public List<LeaveRequest> searchWithCriteriaForManager(UUID managerId, String status, UUID typeId, LocalDate createdAt, UUID businessUnitId) {
         StringBuilder queryBuilder = new StringBuilder();
         StringBuilder init = new StringBuilder("SELECT DISTINCT(l.*) FROM public.leave_requests AS l");
         StringBuilder inner = new StringBuilder("");
@@ -293,10 +304,16 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
         boolean typeIdCheck = typeId == null;
         boolean createdAtCheck = createdAt == null;
+        boolean businessUnitIdCheck = businessUnitId == null;
 
-        if(managerId != null) {
+        if(managerId != null || !businessUnitIdCheck) {
             inner.append(" INNER JOIN public.collaborators AS c ON c.id = l.collaborator_id");
-            condition.append(" AND c.identity_role IN ('BUSINESS_UNIT_MANAGER', 'BUSINESS', 'RH', 'ADMIN') AND c.manager_id = '"+managerId+"'");
+            if(managerId != null) {
+                condition.append(" AND c.identity_role IN ('BUSINESS_UNIT_MANAGER', 'BUSINESS', 'RH', 'ADMIN') AND c.manager_id = '"+managerId+"'");
+            }
+            if(!businessUnitIdCheck) {
+                condition.append(" AND c.business_unit_id = '"+businessUnitId+"'");
+            }
         }
         if(!statusCheck) {
             condition.append(" AND l.status = '"+status+"'");

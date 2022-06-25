@@ -33,7 +33,7 @@ public interface LeaveRequestService {
 
     void delete(UUID id);
 
-    List<LeaveRequest> searchWithCriteria(String status, UUID typeId, LocalDate createdAt);
+    List<LeaveRequest> searchWithCriteria(String status, UUID typeId, LocalDate createdAt, UUID businessUnitId);
 
     List<LeaveRequest> searchWithCriteriaForCollaborator(UUID collaboratorId, String status, UUID typeId, LocalDate createdAt);
 
@@ -43,9 +43,9 @@ public interface LeaveRequestService {
 
     Page<LeaveRequest> findLeaveRequestsByManagerId(UUID id, Pageable pageable);
 
-    List<LeaveRequest> searchWithCriteriaForManager(UUID salesManagerId, String status, UUID typeId, LocalDate createdAt);
+    List<LeaveRequest> searchWithCriteriaForManager(UUID salesManagerId, String status, UUID typeId, LocalDate createdAt, UUID businessUnitId);
 
-    List<LeaveRequest> searchWithCriteriaForSales(UUID salesManagerId, String status, UUID typeId, LocalDate createdAt);
+    List<LeaveRequest> searchWithCriteriaForSales(UUID salesManagerId, String status, UUID typeId, LocalDate createdAt, UUID businessUnitId);
 
     List<LeaveRequest> findLeaveRequestsByCollaboratorId(UUID id);
 
