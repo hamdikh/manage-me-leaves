@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -17,5 +18,7 @@ public class ResponseDTO extends AbstractAuditableEntityDTO {
     private CollaboratorDTO collaborator;
 
     private CollaboratorDTO validator;
+
+    private LocalDateTime validatedAt;
 
 }

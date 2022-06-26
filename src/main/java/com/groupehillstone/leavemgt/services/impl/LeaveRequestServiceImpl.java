@@ -125,6 +125,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
             final LeaveRequest oldLeaveRequest = leaveRequestRepository.findLeaveRequestById(id);
             if(oldLeaveRequest.getFirstValidator() == null && oldLeaveRequest.getSecondValidator() == null) {
                 oldLeaveRequest.setFirstValidator(collaboratorMapper.toEntity(responseDTO.getValidator()));
+                oldLeaveRequest.setFirstValidationAt(responseDTO.getValidatedAt());
                 if(LeaveStatus.VALIDATED.toString().equals(responseDTO.getStatus())) {
                     oldLeaveRequest.setStatus(LeaveStatus.PARTIALLY_VALIDATED);
                 } else {
@@ -132,6 +133,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
                 }
             } else if(oldLeaveRequest.getFirstValidator() != null && oldLeaveRequest.getSecondValidator() == null) {
                 oldLeaveRequest.setSecondValidator(collaboratorMapper.toEntity(responseDTO.getValidator()));
+                oldLeaveRequest.setSecondValidationAt(responseDTO.getValidatedAt());
                 oldLeaveRequest.setStatus(LeaveStatus.valueOf(responseDTO.getStatus()));
             }
             leaveRequest = leaveRequestRepository.save(oldLeaveRequest);

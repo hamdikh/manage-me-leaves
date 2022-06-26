@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -30,5 +31,11 @@ public class LeaveRequest extends AbstractAuditableEntity {
 
     @ManyToOne
     private Collaborator secondValidator;
+
+    @Column(name = "first_validation_at")
+    private LocalDateTime firstValidationAt;
+
+    @Column(name = "second_validation_at")
+    private LocalDateTime secondValidationAt;
 
 }
