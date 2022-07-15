@@ -25,4 +25,6 @@ public interface LeaveTypeService {
 
     Page<LeaveType> findAll(Pageable pageable);
 
+    List<LeaveType> searchWithCriteria(String keywords);
+
 }

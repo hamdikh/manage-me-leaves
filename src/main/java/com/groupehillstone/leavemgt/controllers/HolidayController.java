@@ -6,10 +6,12 @@ import com.groupehillstone.leavemgt.mapper.HolidayMapper;
 import com.groupehillstone.leavemgt.services.HolidayService;
 import com.groupehillstone.utils.SuccessResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -68,17 +70,22 @@ public class HolidayController {
     @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN')")
     public ResponseEntity getAllByYearPageable(@RequestParam int year,
                                                @RequestParam(defaultValue = "0") int page,
-                                               @RequestParam(defaultValue = "15") int size) {
+                                               @RequestParam(defaultValue = "15") int size,
+                                               @RequestParam(required = false) String keywords) {
         ResponseEntity responseEntity;
         try {
             List<HolidayDTO> holidays;
             Pageable paging = PageRequest.of(page, size);
 
             Page<Holiday> pageHolidays;
-            if(year == 0) {
-                pageHolidays = holidayService.findAll(paging);
+            if(StringUtils.isEmpty(keywords) ||StringUtils.isBlank(keywords)) {
+                if(year == 0) {
+                    pageHolidays = holidayService.findAll(paging);
+                } else {
+                    pageHolidays = holidayService.findAllByYear(year, paging);
+                }
             } else {
-                pageHolidays = holidayService.findAllByYear(year, paging);
+                pageHolidays = new PageImpl<>(holidayService.searchWithCriteria(keywords, year));
             }
 
             holidays = holidayMapper.toDto(pageHolidays.getContent());

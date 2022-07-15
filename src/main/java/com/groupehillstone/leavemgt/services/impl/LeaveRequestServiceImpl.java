@@ -191,7 +191,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     }
 
     @Override
-    public List<LeaveRequest> searchWithCriteriaForCollaborator(UUID collaboratorId, String status, UUID typeId, LocalDate createdAt) {
+    public List<LeaveRequest> searchWithCriteriaForCollaborator(UUID collaboratorId, String status, UUID typeId, LocalDate createdAt, String keywords) {
         StringBuilder queryBuilder = new StringBuilder();
         StringBuilder init = new StringBuilder("SELECT DISTINCT(l.*) FROM public.leave_requests as l");
         StringBuilder inner = new StringBuilder("");
@@ -200,6 +200,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
         boolean typeIdCheck = typeId == null;
         boolean createdAtCheck = createdAt == null;
+        boolean keywordsCheck = StringUtils.isNotEmpty(keywords) && StringUtils.isNotBlank(keywords);
 
         if(collaboratorId != null) {
             condition.append(" AND l.collaborator_id = '"+collaboratorId+"'");
@@ -214,6 +215,10 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
             inner.append(" INNER JOIN public.leave_requests_leaves AS lrl ON lrl.leave_request_id = l.id " +
                     "INNER JOIN public.leaves AS lv ON lv.id = lrl.leaves_id");
             condition.append(" AND lv.type_id = '"+typeId+"'");
+        }
+        if(keywordsCheck) {
+            inner.append(" INNER JOIN public.collaborators AS c ON c.id = l.collaborator_id");
+            condition.append(" AND (LOWER(c.first_name) LIKE '%"+keywords+"%' OR LOWER(c.last_name) LIKE '%"+keywords+"%')");
         }
 
         queryBuilder.append(init).append(inner).append(condition);
@@ -257,7 +262,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     }
 
     @Override
-    public List<LeaveRequest> searchWithCriteriaForSales(UUID salesManagerId, String status, UUID typeId, LocalDate createdAt, UUID businessUnitId) {
+    public List<LeaveRequest> searchWithCriteriaForSales(UUID salesManagerId, String status, UUID typeId, LocalDate createdAt, UUID businessUnitId, String keywords) {
         StringBuilder queryBuilder = new StringBuilder();
         StringBuilder init = new StringBuilder("SELECT DISTINCT(l.*) FROM public.leave_requests AS l");
         StringBuilder inner = new StringBuilder("");
@@ -267,14 +272,18 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         boolean typeIdCheck = typeId == null;
         boolean createdAtCheck = createdAt == null;
         boolean businessUnitIdCheck = businessUnitId == null;
+        boolean keywordsCheck = StringUtils.isNotEmpty(keywords) && StringUtils.isNotBlank(keywords);
 
-        if(salesManagerId != null || !businessUnitIdCheck) {
+        if(salesManagerId != null || !businessUnitIdCheck || keywordsCheck) {
             inner.append(" INNER JOIN public.collaborators AS c ON c.id = l.collaborator_id");
             if(salesManagerId != null) {
                 condition.append(" AND c.identity_role IN ('EMPLOYEE', 'TEAM_MANAGER') AND c.sales_manager_id = '"+salesManagerId+"'");
             }
             if(!businessUnitIdCheck) {
                 condition.append(" AND c.business_unit_id = '"+businessUnitId+"'");
+            }
+            if(keywordsCheck) {
+                condition.append(" AND (LOWER(c.first_name) LIKE '%"+keywords+"%' OR LOWER(c.last_name) LIKE '%"+keywords+"%')");
             }
         }
         if(!statusCheck) {
@@ -297,7 +306,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     }
 
     @Override
-    public List<LeaveRequest> searchWithCriteriaForManager(UUID managerId, String status, UUID typeId, LocalDate createdAt, UUID businessUnitId) {
+    public List<LeaveRequest> searchWithCriteriaForManager(UUID managerId, String status, UUID typeId, LocalDate createdAt, UUID businessUnitId, String keywords) {
         StringBuilder queryBuilder = new StringBuilder();
         StringBuilder init = new StringBuilder("SELECT DISTINCT(l.*) FROM public.leave_requests AS l");
         StringBuilder inner = new StringBuilder("");
@@ -327,6 +336,10 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
             inner.append(" INNER JOIN public.leave_requests_leaves AS lrl ON lrl.leave_request_id = l.id " +
                     "INNER JOIN public.leaves AS lv ON lv.id = lrl.leaves_id");
             condition.append(" AND lv.type_id = '"+typeId+"'");
+        }
+        if(StringUtils.isNotEmpty(keywords) && StringUtils.isNotBlank(keywords)) {
+            inner.append(" INNER JOIN public.collaborators AS c ON c.id = l.collaborator_id");
+            condition.append(" AND (LOWER(c.first_name) LIKE '%"+keywords+"%' OR LOWER(c.last_name) LIKE '%"+keywords+"%')");
         }
 
         queryBuilder.append(init).append(inner).append(condition);

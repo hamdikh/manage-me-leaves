@@ -124,7 +124,8 @@ public class LeaveRequestController {
                                             @RequestParam(defaultValue = "15") int size,
                                             @RequestParam(required = false) String status,
                                             @RequestParam(required = false) String typeId,
-                                            @RequestParam(required = false) String createdAt) {
+                                            @RequestParam(required = false) String createdAt,
+                                                        @RequestParam(required = false) String keywords) {
         ResponseEntity responseEntity;
         try {
             List<LeaveRequestDTO> leaveRequests;
@@ -133,12 +134,13 @@ public class LeaveRequestController {
             boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
             boolean typeIdCheck = StringUtils.isEmpty(typeId) && StringUtils.isBlank(typeId);
             boolean createdAtCheck = StringUtils.isEmpty(createdAt);
+            boolean keywordsCheck = StringUtils.isEmpty(keywords) || StringUtils.isBlank(keywords);
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate formattedCreatedAt = null;
 
             Page<LeaveRequest> pageLeaveRequests = null;
-            if(statusCheck && typeIdCheck && createdAtCheck) {
+            if(statusCheck && typeIdCheck && createdAtCheck && keywordsCheck) {
                 pageLeaveRequests = leaveRequestService.findLeaveRequestByCollaboratorId(id, paging);
             } else {
                 UUID uuidType = null;
@@ -148,7 +150,7 @@ public class LeaveRequestController {
                 if(StringUtils.isNotBlank(typeId) && StringUtils.isNotEmpty(typeId)) {
                     uuidType = uuidMapper.stringToUUID(typeId);
                 }
-                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteriaForCollaborator(id, status, uuidType, formattedCreatedAt));
+                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteriaForCollaborator(id, status, uuidType, formattedCreatedAt, keywords));
             }
 
             leaveRequests = leaveRequestMapper.toDto(pageLeaveRequests.getContent());
@@ -261,7 +263,8 @@ public class LeaveRequestController {
                                                            @RequestParam(required = false) String status,
                                                            @RequestParam(required = false) String typeId,
                                                            @RequestParam(required = false) String createdAt,
-                                                           @RequestParam(required = false) String businessUnitId) {
+                                                           @RequestParam(required = false) String businessUnitId,
+                                                           @RequestParam(required = false) String keywords) {
         ResponseEntity responseEntity;
         try {
             List<LeaveRequestDTO> leaveRequests;
@@ -271,12 +274,13 @@ public class LeaveRequestController {
             boolean typeIdCheck = StringUtils.isEmpty(typeId) && StringUtils.isBlank(typeId);
             boolean createdAtCheck = StringUtils.isEmpty(createdAt) && StringUtils.isBlank(createdAt);
             boolean businessUnitIdCheck = StringUtils.isEmpty(businessUnitId) && StringUtils.isBlank(businessUnitId);
+            boolean keywordsCheck = StringUtils.isEmpty(keywords) || StringUtils.isBlank(keywords);
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate formattedCreatedAt = null;
 
             Page<LeaveRequest> pageLeaveRequests = null;
-            if(statusCheck && typeIdCheck && createdAtCheck && businessUnitIdCheck) {
+            if(statusCheck && typeIdCheck && createdAtCheck && businessUnitIdCheck && keywordsCheck) {
                 pageLeaveRequests = leaveRequestService.findLeaveRequestsBySalesManagerId(id, paging);
             } else {
                 UUID uuidType = null;
@@ -290,7 +294,7 @@ public class LeaveRequestController {
                 if(!businessUnitIdCheck) {
                     uuidBusinessUnit = uuidMapper.stringToUUID(businessUnitId);
                 }
-                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteriaForSales(id, status, uuidType, formattedCreatedAt, uuidBusinessUnit));
+                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteriaForSales(id, status, uuidType, formattedCreatedAt, uuidBusinessUnit, keywords));
             }
 
             leaveRequests = leaveRequestMapper.toDto(pageLeaveRequests.getContent());
@@ -316,6 +320,7 @@ public class LeaveRequestController {
                                                            @RequestParam(required = false) String status,
                                                            @RequestParam(required = false) String typeId,
                                                            @RequestParam(required = false) String createdAt,
+                                                            @RequestParam(required = false) String keywords,
                                                             @RequestParam(required = false) String businessUnitId) {
         ResponseEntity responseEntity;
         try {
@@ -326,12 +331,13 @@ public class LeaveRequestController {
             boolean typeIdCheck = StringUtils.isEmpty(typeId) && StringUtils.isBlank(typeId);
             boolean createdAtCheck = StringUtils.isEmpty(createdAt) && StringUtils.isBlank(createdAt);
             boolean businessUnitIdCheck = StringUtils.isEmpty(businessUnitId) && StringUtils.isBlank(businessUnitId);
+            boolean keywordsCheck = StringUtils.isEmpty(keywords) || StringUtils.isBlank(keywords);
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate formattedCreatedAt = null;
 
             Page<LeaveRequest> pageLeaveRequests = null;
-            if(statusCheck && typeIdCheck && createdAtCheck && businessUnitIdCheck) {
+            if(statusCheck && typeIdCheck && createdAtCheck && businessUnitIdCheck && keywordsCheck) {
                 pageLeaveRequests = leaveRequestService.findLeaveRequestsByManagerId(id, paging);
             } else {
                 UUID uuidType = null;
@@ -345,7 +351,7 @@ public class LeaveRequestController {
                 if(!businessUnitIdCheck) {
                     uuidBusinessUnitId = uuidMapper.stringToUUID(businessUnitId);
                 }
-                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteriaForManager(id, status, uuidType, formattedCreatedAt, uuidBusinessUnitId));
+                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteriaForManager(id, status, uuidType, formattedCreatedAt, uuidBusinessUnitId, keywords));
             }
 
             leaveRequests = leaveRequestMapper.toDto(pageLeaveRequests.getContent());

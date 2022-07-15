@@ -8,10 +8,12 @@ import com.groupehillstone.utils.ErrorResponse;
 import com.groupehillstone.utils.SuccessResponse;
 import com.groupehillstone.validators.LeaveTypeValidator;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -58,13 +60,19 @@ public class LeaveTypeController {
     @GetMapping("/all")
     @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_ADMIN')")
     public ResponseEntity getAllPageable(@RequestParam(defaultValue = "0") int page,
-                                         @RequestParam(defaultValue = "15") int size) {
+                                         @RequestParam(defaultValue = "15") int size,
+                                         @RequestParam(required = false) String keywords) {
         ResponseEntity responseEntity;
         try {
             List<LeaveTypeDTO> leaveTypes;
             Pageable paging = PageRequest.of(page, size);
 
-            Page<LeaveType> pageLeaveType = leaveTypeService.findAll(paging);
+            Page<LeaveType> pageLeaveType;
+            if(StringUtils.isEmpty(keywords) || StringUtils.isBlank(keywords)) {
+                pageLeaveType = leaveTypeService.findAll(paging);
+            } else {
+                pageLeaveType = new PageImpl<>(leaveTypeService.searchWithCriteria(keywords));
+            }
 
             leaveTypes = leaveTypeMapper.toDto(pageLeaveType.getContent());
             Map<String, Object> response = new HashMap<>();
