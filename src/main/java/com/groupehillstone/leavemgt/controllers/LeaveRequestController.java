@@ -100,7 +100,7 @@ public class LeaveRequestController {
                 if(!businessUnitIdCheck) {
                     uuidBusinessUnitId = uuidMapper.stringToUUID(businessUnitId);
                 }
-                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteria(status, uuidType, formattedCreatedAt, uuidBusinessUnitId));
+                pageLeaveRequests = leaveRequestService.searchWithCriteria(status, uuidType, formattedCreatedAt, uuidBusinessUnitId, paging);
             }
 
             leaveRequests = leaveRequestMapper.toDto(pageLeaveRequests.getContent());
@@ -150,7 +150,7 @@ public class LeaveRequestController {
                 if(StringUtils.isNotBlank(typeId) && StringUtils.isNotEmpty(typeId)) {
                     uuidType = uuidMapper.stringToUUID(typeId);
                 }
-                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteriaForCollaborator(id, status, uuidType, formattedCreatedAt, keywords));
+                pageLeaveRequests = leaveRequestService.searchWithCriteriaForCollaborator(id, status, uuidType, formattedCreatedAt, keywords, paging);
             }
 
             leaveRequests = leaveRequestMapper.toDto(pageLeaveRequests.getContent());
@@ -294,7 +294,7 @@ public class LeaveRequestController {
                 if(!businessUnitIdCheck) {
                     uuidBusinessUnit = uuidMapper.stringToUUID(businessUnitId);
                 }
-                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteriaForSales(id, status, uuidType, formattedCreatedAt, uuidBusinessUnit, keywords));
+                pageLeaveRequests = leaveRequestService.searchWithCriteriaForSales(id, status, uuidType, formattedCreatedAt, uuidBusinessUnit, keywords, paging);
             }
 
             leaveRequests = leaveRequestMapper.toDto(pageLeaveRequests.getContent());
@@ -351,7 +351,7 @@ public class LeaveRequestController {
                 if(!businessUnitIdCheck) {
                     uuidBusinessUnitId = uuidMapper.stringToUUID(businessUnitId);
                 }
-                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteriaForManager(id, status, uuidType, formattedCreatedAt, uuidBusinessUnitId, keywords));
+                pageLeaveRequests = leaveRequestService.searchWithCriteriaForManager(id, status, uuidType, formattedCreatedAt, uuidBusinessUnitId, keywords, paging);
             }
 
             leaveRequests = leaveRequestMapper.toDto(pageLeaveRequests.getContent());

@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -97,9 +98,11 @@ public class HolidayServiceImpl implements HolidayService {
     }
 
     @Override
-    public List<Holiday> searchWithCriteria(String keywords, int year) {
+    public Page<Holiday> searchWithCriteria(String keywords, int year, Pageable paging) {
         StringBuilder queryBuilder = new StringBuilder();
+        StringBuilder queryBuilderCount = new StringBuilder();
         StringBuilder init = new StringBuilder("SELECT DISTINCT(h.*) FROM public.holidays AS h");
+        StringBuilder count = new StringBuilder("SELECT DISTINCT(COUNT(h.id)) FROM public.holidays AS h");
         StringBuilder condition = new StringBuilder(" WHERE h.is_deleted = 'false'");
         StringBuilder order = new StringBuilder(" ORDER BY h.date ASC");
 
@@ -114,8 +117,17 @@ public class HolidayServiceImpl implements HolidayService {
         queryBuilder.append(init).append(condition).append(order);
 
         Query query = entityManager.createNativeQuery(queryBuilder.toString(), Holiday.class);
+        query.setFirstResult(paging.getPageNumber() * paging.getPageSize());
+        query.setMaxResults(paging.getPageSize());
         final List<Holiday> holidays = query.getResultList();
-        return holidays;
+
+        queryBuilderCount.append(count).append(condition);
+        Query countQuery = entityManager.createNativeQuery(queryBuilderCount.toString());
+        long countResult = Long.parseLong(countQuery.getSingleResult().toString());
+
+        Page holidaysPage = new PageImpl(holidays, paging, countResult);
+
+        return holidaysPage;
     }
 
     @Override

@@ -71,7 +71,7 @@ public class LeaveTypeController {
             if(StringUtils.isEmpty(keywords) || StringUtils.isBlank(keywords)) {
                 pageLeaveType = leaveTypeService.findAll(paging);
             } else {
-                pageLeaveType = new PageImpl<>(leaveTypeService.searchWithCriteria(keywords));
+                pageLeaveType = leaveTypeService.searchWithCriteria(keywords, paging);
             }
 
             leaveTypes = leaveTypeMapper.toDto(pageLeaveType.getContent());

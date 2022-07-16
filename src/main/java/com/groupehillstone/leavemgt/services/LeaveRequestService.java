@@ -16,7 +16,6 @@ public interface LeaveRequestService {
 
     Page<LeaveRequest> findAll(Predicate predicate, Pageable pageable);
 
-
     Page<LeaveRequest> findAll(Pageable pageable);
 
     List<LeaveRequest> findAll();
@@ -33,9 +32,9 @@ public interface LeaveRequestService {
 
     void delete(UUID id);
 
-    List<LeaveRequest> searchWithCriteria(String status, UUID typeId, LocalDate createdAt, UUID businessUnitId);
+    Page<LeaveRequest> searchWithCriteria(String status, UUID typeId, LocalDate createdAt, UUID businessUnitId, Pageable paging);
 
-    List<LeaveRequest> searchWithCriteriaForCollaborator(UUID collaboratorId, String status, UUID typeId, LocalDate createdAt, String keywords);
+    Page<LeaveRequest> searchWithCriteriaForCollaborator(UUID collaboratorId, String status, UUID typeId, LocalDate createdAt, String keywords, Pageable paging);
 
     LeaveRequest findLeaveRequestByLeaveId(UUID id);
 
@@ -43,9 +42,9 @@ public interface LeaveRequestService {
 
     Page<LeaveRequest> findLeaveRequestsByManagerId(UUID id, Pageable pageable);
 
-    List<LeaveRequest> searchWithCriteriaForManager(UUID salesManagerId, String status, UUID typeId, LocalDate createdAt, UUID businessUnitId, String keywords);
+    Page<LeaveRequest> searchWithCriteriaForManager(UUID salesManagerId, String status, UUID typeId, LocalDate createdAt, UUID businessUnitId, String keywords, Pageable paging);
 
-    List<LeaveRequest> searchWithCriteriaForSales(UUID salesManagerId, String status, UUID typeId, LocalDate createdAt, UUID businessUnitId, String keywords);
+    Page<LeaveRequest> searchWithCriteriaForSales(UUID salesManagerId, String status, UUID typeId, LocalDate createdAt, UUID businessUnitId, String keywords, Pageable paging);
 
     List<LeaveRequest> findLeaveRequestsByCollaboratorId(UUID id);
 

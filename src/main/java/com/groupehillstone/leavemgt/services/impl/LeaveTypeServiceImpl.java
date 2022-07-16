@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -114,9 +115,11 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
     }
 
     @Override
-    public List<LeaveType> searchWithCriteria(String keywords) {
+    public Page<LeaveType> searchWithCriteria(String keywords, Pageable pageable) {
         StringBuilder queryBuilder = new StringBuilder("");
+        StringBuilder queryBuilderCount = new StringBuilder("");
         StringBuilder init = new StringBuilder("SELECT DISTINCT(l.*) FROM public.leave_types AS l");
+        StringBuilder count = new StringBuilder("SELECT DISTINCT(COUNT(l.id)) FROM public.leave_types AS l");
         StringBuilder condition = new StringBuilder(" WHERE l.is_deleted = 'false'");
         StringBuilder order = new StringBuilder(" ORDER BY l.wording ASC");
 
@@ -127,7 +130,16 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
         queryBuilder.append(init).append(condition).append(order);
 
         Query query = entityManager.createNativeQuery(queryBuilder.toString(), LeaveType.class);
+        query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
+        query.setMaxResults(pageable.getPageSize());
         final List<LeaveType> leaveTypes = query.getResultList();
-        return leaveTypes;
+
+        queryBuilderCount.append(count).append(condition);
+        Query countQuery = entityManager.createNativeQuery(queryBuilderCount.toString());
+        long countResult = Long.parseLong(countQuery.getSingleResult().toString());
+
+        Page leaveTypePage = new PageImpl(leaveTypes, pageable, countResult);
+
+        return leaveTypePage;
     }
 }

@@ -85,7 +85,7 @@ public class HolidayController {
                     pageHolidays = holidayService.findAllByYear(year, paging);
                 }
             } else {
-                pageHolidays = new PageImpl<>(holidayService.searchWithCriteria(keywords, year));
+                pageHolidays = holidayService.searchWithCriteria(keywords, year, paging);
             }
 
             holidays = holidayMapper.toDto(pageHolidays.getContent());
