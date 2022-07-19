@@ -104,7 +104,7 @@ public class HolidayServiceImpl implements HolidayService {
         StringBuilder init = new StringBuilder("SELECT DISTINCT(h.*) FROM public.holidays AS h");
         StringBuilder count = new StringBuilder("SELECT DISTINCT(COUNT(h.id)) FROM public.holidays AS h");
         StringBuilder condition = new StringBuilder(" WHERE h.is_deleted = 'false'");
-        StringBuilder order = new StringBuilder(" ORDER BY h.date ASC");
+        StringBuilder order = new StringBuilder(" ORDER BY h."+paging.getSort().toString().replace(':', ' '));
 
         if(StringUtils.isNotEmpty(keywords) && StringUtils.isNotBlank(keywords)) {
             condition.append(" AND (LOWER(h.designation) LIKE '%"+keywords+"%' OR concat('0',cast(EXTRACT(day FROM date) as text)) LIKE '%"+keywords+

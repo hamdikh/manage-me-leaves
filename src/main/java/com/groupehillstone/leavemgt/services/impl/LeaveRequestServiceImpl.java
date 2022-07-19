@@ -163,6 +163,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         StringBuilder count = new StringBuilder("SELECT DISTINCT(COUNT(l.id)) FROM public.leave_requests as l");
         StringBuilder inner = new StringBuilder("");
         StringBuilder condition = new StringBuilder(" WHERE l.is_deleted = 'false' AND l.status <> 'DRAFT'");
+        StringBuilder order = new StringBuilder(" ORDER BY l."+paging.getSort().toString().replace(':', ' '));
 
         boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
         boolean typeIdCheck = typeId == null;
@@ -185,7 +186,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
             condition.append(" AND c.business_unit_id = '"+businessUnitId+"'");
         }
 
-        queryBuilder.append(init).append(inner).append(condition);
+        queryBuilder.append(init).append(inner).append(condition).append(order);
 
         Query query = entityManager.createNativeQuery(queryBuilder.toString(), LeaveRequest.class);
         query.setFirstResult(paging.getPageNumber() * paging.getPageSize());
@@ -210,6 +211,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         StringBuilder count = new StringBuilder("SELECT DISTINCT(COUNT(l.id)) FROM public.leave_requests as l");
         StringBuilder inner = new StringBuilder("");
         StringBuilder condition = new StringBuilder(" WHERE l.is_deleted = 'false'");
+        StringBuilder order = new StringBuilder(" ORDER BY l."+paging.getSort().toString().replace(':', ' '));
 
         boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
         boolean typeIdCheck = typeId == null;
@@ -235,7 +237,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
             condition.append(" AND (LOWER(c.first_name) LIKE '%"+keywords+"%' OR LOWER(c.last_name) LIKE '%"+keywords+"%')");
         }
 
-        queryBuilder.append(init).append(inner).append(condition);
+        queryBuilder.append(init).append(inner).append(condition).append(order);
 
         Query query = entityManager.createNativeQuery(queryBuilder.toString(), LeaveRequest.class);
         query.setFirstResult(paging.getPageNumber() * paging.getPageSize());
@@ -292,6 +294,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         StringBuilder count = new StringBuilder("SELECT DISTINCT(COUNT(l.id)) FROM public.leave_requests AS l");
         StringBuilder inner = new StringBuilder("");
         StringBuilder condition = new StringBuilder(" WHERE l.is_deleted = 'false' AND l.status <> 'DRAFT'");
+        StringBuilder order = new StringBuilder(" ORDER BY l."+paging.getSort().toString().replace(':', ' '));
 
         boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
         boolean typeIdCheck = typeId == null;
@@ -323,7 +326,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
             condition.append(" AND lv.type_id = '"+typeId+"'");
         }
 
-        queryBuilder.append(init).append(inner).append(condition);
+        queryBuilder.append(init).append(inner).append(condition).append(order);
 
         Query query = entityManager.createNativeQuery(queryBuilder.toString(), LeaveRequest.class);
         query.setFirstResult(paging.getPageNumber() * paging.getPageSize());
@@ -347,6 +350,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         StringBuilder count = new StringBuilder("SELECT DISTINCT(COUNT(l.id)) FROM public.leave_requests AS l");
         StringBuilder inner = new StringBuilder("");
         StringBuilder condition = new StringBuilder(" WHERE l.is_deleted = 'false' AND l.status <> 'DRAFT'");
+        StringBuilder order = new StringBuilder(" ORDER BY l."+paging.getSort().toString().replace(':', ' '));
 
         boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
         boolean typeIdCheck = typeId == null;
@@ -378,7 +382,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
             condition.append(" AND (LOWER(c.first_name) LIKE '%"+keywords+"%' OR LOWER(c.last_name) LIKE '%"+keywords+"%')");
         }
 
-        queryBuilder.append(init).append(inner).append(condition);
+        queryBuilder.append(init).append(inner).append(condition).append(order);
 
         Query query = entityManager.createNativeQuery(queryBuilder.toString(), LeaveRequest.class);
         query.setFirstResult(paging.getPageNumber() * paging.getPageSize());

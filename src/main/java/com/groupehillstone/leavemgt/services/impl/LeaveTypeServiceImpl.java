@@ -121,7 +121,7 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
         StringBuilder init = new StringBuilder("SELECT DISTINCT(l.*) FROM public.leave_types AS l");
         StringBuilder count = new StringBuilder("SELECT DISTINCT(COUNT(l.id)) FROM public.leave_types AS l");
         StringBuilder condition = new StringBuilder(" WHERE l.is_deleted = 'false'");
-        StringBuilder order = new StringBuilder(" ORDER BY l.wording ASC");
+        StringBuilder order = new StringBuilder(" ORDER BY l."+pageable.getSort().toString().replace(':', ' '));
 
         if(StringUtils.isNotBlank(keywords) && StringUtils.isNotBlank(keywords)) {
             condition.append(" AND LOWER(l.wording) LIKE '%"+keywords+"%' OR LOWER(l.code) LIKE '%"+keywords+"%'");
