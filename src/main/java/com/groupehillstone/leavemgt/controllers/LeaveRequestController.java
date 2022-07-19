@@ -14,10 +14,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,10 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @CrossOrigin("*")
@@ -71,11 +65,13 @@ public class LeaveRequestController {
                                           @RequestParam(required = false) String status,
                                          @RequestParam(required = false) String typeId,
                                          @RequestParam(required = false) String createdAt,
-                                         @RequestParam(required = false) String businessUnitId) {
+                                         @RequestParam(required = false) String businessUnitId,
+                                         @RequestParam(defaultValue = "created_at,desc") String[] sort) {
         ResponseEntity responseEntity;
         try {
+            List<Sort.Order> orders = getOrders(sort);
             List<LeaveRequestDTO> leaveRequests;
-            Pageable paging = PageRequest.of(page, size);
+            Pageable paging = PageRequest.of(page, size, Sort.by(orders));
 
             boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
             boolean typeIdCheck = StringUtils.isEmpty(typeId) && StringUtils.isBlank(typeId);
@@ -100,7 +96,7 @@ public class LeaveRequestController {
                 if(!businessUnitIdCheck) {
                     uuidBusinessUnitId = uuidMapper.stringToUUID(businessUnitId);
                 }
-                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteria(status, uuidType, formattedCreatedAt, uuidBusinessUnitId));
+                pageLeaveRequests = leaveRequestService.searchWithCriteria(status, uuidType, formattedCreatedAt, uuidBusinessUnitId, paging);
             }
 
             leaveRequests = leaveRequestMapper.toDto(pageLeaveRequests.getContent());
@@ -124,21 +120,25 @@ public class LeaveRequestController {
                                             @RequestParam(defaultValue = "15") int size,
                                             @RequestParam(required = false) String status,
                                             @RequestParam(required = false) String typeId,
-                                            @RequestParam(required = false) String createdAt) {
+                                            @RequestParam(required = false) String createdAt,
+                                                        @RequestParam(required = false) String keywords,
+                                                        @RequestParam(defaultValue = "created_at,desc") String[] sort) {
         ResponseEntity responseEntity;
         try {
+            List<Sort.Order> orders = getOrders(sort);
             List<LeaveRequestDTO> leaveRequests;
-            Pageable paging = PageRequest.of(page, size);
+            Pageable paging = PageRequest.of(page, size, Sort.by(orders));
 
             boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
             boolean typeIdCheck = StringUtils.isEmpty(typeId) && StringUtils.isBlank(typeId);
             boolean createdAtCheck = StringUtils.isEmpty(createdAt);
+            boolean keywordsCheck = StringUtils.isEmpty(keywords) || StringUtils.isBlank(keywords);
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate formattedCreatedAt = null;
 
             Page<LeaveRequest> pageLeaveRequests = null;
-            if(statusCheck && typeIdCheck && createdAtCheck) {
+            if(statusCheck && typeIdCheck && createdAtCheck && keywordsCheck) {
                 pageLeaveRequests = leaveRequestService.findLeaveRequestByCollaboratorId(id, paging);
             } else {
                 UUID uuidType = null;
@@ -148,7 +148,7 @@ public class LeaveRequestController {
                 if(StringUtils.isNotBlank(typeId) && StringUtils.isNotEmpty(typeId)) {
                     uuidType = uuidMapper.stringToUUID(typeId);
                 }
-                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteriaForCollaborator(id, status, uuidType, formattedCreatedAt));
+                pageLeaveRequests = leaveRequestService.searchWithCriteriaForCollaborator(id, status, uuidType, formattedCreatedAt, keywords, paging);
             }
 
             leaveRequests = leaveRequestMapper.toDto(pageLeaveRequests.getContent());
@@ -261,22 +261,26 @@ public class LeaveRequestController {
                                                            @RequestParam(required = false) String status,
                                                            @RequestParam(required = false) String typeId,
                                                            @RequestParam(required = false) String createdAt,
-                                                           @RequestParam(required = false) String businessUnitId) {
+                                                           @RequestParam(required = false) String businessUnitId,
+                                                           @RequestParam(required = false) String keywords,
+                                                           @RequestParam(defaultValue = "created_at,desc") String[] sort) {
         ResponseEntity responseEntity;
         try {
+            List<Sort.Order> orders = getOrders(sort);
             List<LeaveRequestDTO> leaveRequests;
-            Pageable paging = PageRequest.of(page, size);
+            Pageable paging = PageRequest.of(page, size, Sort.by(orders));
 
             boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
             boolean typeIdCheck = StringUtils.isEmpty(typeId) && StringUtils.isBlank(typeId);
             boolean createdAtCheck = StringUtils.isEmpty(createdAt) && StringUtils.isBlank(createdAt);
             boolean businessUnitIdCheck = StringUtils.isEmpty(businessUnitId) && StringUtils.isBlank(businessUnitId);
+            boolean keywordsCheck = StringUtils.isEmpty(keywords) || StringUtils.isBlank(keywords);
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate formattedCreatedAt = null;
 
             Page<LeaveRequest> pageLeaveRequests = null;
-            if(statusCheck && typeIdCheck && createdAtCheck && businessUnitIdCheck) {
+            if(statusCheck && typeIdCheck && createdAtCheck && businessUnitIdCheck && keywordsCheck) {
                 pageLeaveRequests = leaveRequestService.findLeaveRequestsBySalesManagerId(id, paging);
             } else {
                 UUID uuidType = null;
@@ -290,7 +294,7 @@ public class LeaveRequestController {
                 if(!businessUnitIdCheck) {
                     uuidBusinessUnit = uuidMapper.stringToUUID(businessUnitId);
                 }
-                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteriaForSales(id, status, uuidType, formattedCreatedAt, uuidBusinessUnit));
+                pageLeaveRequests = leaveRequestService.searchWithCriteriaForSales(id, status, uuidType, formattedCreatedAt, uuidBusinessUnit, keywords, paging);
             }
 
             leaveRequests = leaveRequestMapper.toDto(pageLeaveRequests.getContent());
@@ -316,22 +320,26 @@ public class LeaveRequestController {
                                                            @RequestParam(required = false) String status,
                                                            @RequestParam(required = false) String typeId,
                                                            @RequestParam(required = false) String createdAt,
-                                                            @RequestParam(required = false) String businessUnitId) {
+                                                            @RequestParam(required = false) String keywords,
+                                                            @RequestParam(required = false) String businessUnitId,
+                                                      @RequestParam(defaultValue = "created_at,desc") String[] sort) {
         ResponseEntity responseEntity;
         try {
+            List<Sort.Order> orders = getOrders(sort);
             List<LeaveRequestDTO> leaveRequests;
-            Pageable paging = PageRequest.of(page, size);
+            Pageable paging = PageRequest.of(page, size, Sort.by(orders));
 
             boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
             boolean typeIdCheck = StringUtils.isEmpty(typeId) && StringUtils.isBlank(typeId);
             boolean createdAtCheck = StringUtils.isEmpty(createdAt) && StringUtils.isBlank(createdAt);
             boolean businessUnitIdCheck = StringUtils.isEmpty(businessUnitId) && StringUtils.isBlank(businessUnitId);
+            boolean keywordsCheck = StringUtils.isEmpty(keywords) || StringUtils.isBlank(keywords);
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate formattedCreatedAt = null;
 
             Page<LeaveRequest> pageLeaveRequests = null;
-            if(statusCheck && typeIdCheck && createdAtCheck && businessUnitIdCheck) {
+            if(statusCheck && typeIdCheck && createdAtCheck && businessUnitIdCheck && keywordsCheck) {
                 pageLeaveRequests = leaveRequestService.findLeaveRequestsByManagerId(id, paging);
             } else {
                 UUID uuidType = null;
@@ -345,7 +353,7 @@ public class LeaveRequestController {
                 if(!businessUnitIdCheck) {
                     uuidBusinessUnitId = uuidMapper.stringToUUID(businessUnitId);
                 }
-                pageLeaveRequests = new PageImpl<>(leaveRequestService.searchWithCriteriaForManager(id, status, uuidType, formattedCreatedAt, uuidBusinessUnitId));
+                pageLeaveRequests = leaveRequestService.searchWithCriteriaForManager(id, status, uuidType, formattedCreatedAt, uuidBusinessUnitId, keywords, paging);
             }
 
             leaveRequests = leaveRequestMapper.toDto(pageLeaveRequests.getContent());
@@ -417,6 +425,31 @@ public class LeaveRequestController {
             response = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e);
         }
         return response;
+    }
+
+    private Sort.Direction getSortDirection(String direction) {
+        if (direction.equals("asc")) {
+            return Sort.Direction.ASC;
+        } else if (direction.equals("desc")) {
+            return Sort.Direction.DESC;
+        }
+        return Sort.Direction.ASC;
+    }
+
+    private List<Sort.Order> getOrders(String[] sort) {
+        List<Sort.Order> orders = new ArrayList<Sort.Order>();
+        if (sort[0].contains(",")) {
+            // will sort more than 2 fields
+            // sortOrder="field, direction"
+            for (String sortOrder : sort) {
+                String[] _sort = sortOrder.split(",");
+                orders.add(new Sort.Order(getSortDirection(_sort[1]), _sort[0]));
+            }
+        } else {
+            // sort=[field, direction]
+            orders.add(new Sort.Order(getSortDirection(sort[1]), sort[0]));
+        }
+        return orders;
     }
 
 }

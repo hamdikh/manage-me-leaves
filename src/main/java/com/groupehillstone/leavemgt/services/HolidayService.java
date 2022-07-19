@@ -15,6 +15,8 @@ public interface HolidayService {
 
     Page<Holiday> findAll(Pageable pageable);
 
+    Page<Holiday> searchWithCriteria(String keywords, int year, Pageable paging);
+
     Holiday create(Holiday holiday);
 
     Holiday update(Holiday holiday);
