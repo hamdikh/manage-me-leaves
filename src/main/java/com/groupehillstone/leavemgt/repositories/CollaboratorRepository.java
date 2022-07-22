@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -15,5 +16,8 @@ public interface CollaboratorRepository extends JpaRepository<Collaborator, UUID
 
     @Query("SELECT c FROM Collaborator c WHERE c.isDeleted = false AND c.id = :id")
     Collaborator findCollaboratorById(UUID id);
+
+    @Query("SELECT c.email FROM Collaborator c WHERE c.isDeleted = false AND c.identityRole = 'RH'")
+    List<String> findRHEmail();
 
 }

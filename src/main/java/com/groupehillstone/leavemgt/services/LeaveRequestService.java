@@ -56,4 +56,6 @@ public interface LeaveRequestService {
 
     List<LeaveRequest> findLeaveRequestsForTeam(UUID id);
 
+    List<LeaveRequest> findNotValidated();
+
 }

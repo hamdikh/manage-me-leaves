@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -38,5 +39,16 @@ public class CollaboratorServiceImpl implements CollaboratorService {
             logger.error("Error retrieving collaborator with id : "+id, e);
         }
         return collaborator;
+    }
+
+    @Override
+    public List<String> findRHEmail() {
+        List<String> emails = null;
+        try {
+            emails = collaboratorRepository.findRHEmail();
+        } catch (final Exception e) {
+            logger.error("Error finding rh email");
+        }
+        return emails;
     }
 }

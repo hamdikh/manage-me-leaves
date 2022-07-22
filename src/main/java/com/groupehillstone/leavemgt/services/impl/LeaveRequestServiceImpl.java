@@ -1,5 +1,9 @@
 package com.groupehillstone.leavemgt.services.impl;
 
+import com.groupehillstone.config.NotificationConfig;
+import com.groupehillstone.leavemgt.batch.CollaboratorNotificationThread;
+import com.groupehillstone.leavemgt.batch.ManagerNotificationThread;
+import com.groupehillstone.leavemgt.batch.RhNotificationThread;
 import com.groupehillstone.leavemgt.dto.LeaveRequestDTO;
 import com.groupehillstone.leavemgt.dto.ResponseDTO;
 import com.groupehillstone.leavemgt.entities.Leave;
@@ -8,6 +12,7 @@ import com.groupehillstone.leavemgt.enums.LeaveStatus;
 import com.groupehillstone.leavemgt.mapper.CollaboratorMapper;
 import com.groupehillstone.leavemgt.mapper.LeaveRequestMapper;
 import com.groupehillstone.leavemgt.repositories.LeaveRequestRepository;
+import com.groupehillstone.leavemgt.services.CollaboratorService;
 import com.groupehillstone.leavemgt.services.LeaveRequestService;
 import com.querydsl.core.types.Predicate;
 import org.apache.commons.collections4.ListUtils;
@@ -43,6 +48,12 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
     @Autowired
     private CollaboratorMapper collaboratorMapper;
+
+    @Autowired
+    private CollaboratorService collaboratorService;
+
+    @Autowired
+    private NotificationConfig notificationConfig;
 
     @Override
     public Page<LeaveRequest> findAll(Predicate predicate, Pageable pageable) {
@@ -101,22 +112,40 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
     @Override
     public LeaveRequest create(LeaveRequest leaveRequest) {
+        LeaveRequest savedLeaveRequest = null;
         try {
-            leaveRequest = leaveRequestRepository.save(leaveRequest);
+            savedLeaveRequest = leaveRequestRepository.save(leaveRequest);
+            if(savedLeaveRequest != null && LeaveStatus.PENDING.equals(savedLeaveRequest.getStatus())) {
+                Thread thread1 = new Thread(new CollaboratorNotificationThread(savedLeaveRequest, notificationConfig.getLeaveRequestsUrl()));
+                Thread thread2 = new Thread(new ManagerNotificationThread(savedLeaveRequest, notificationConfig.getLeaveRequestsUrl()));
+                Thread thread3 = new Thread(new RhNotificationThread(savedLeaveRequest, notificationConfig.getLeaveRequestsUrl(), collaboratorService.findRHEmail()));
+                thread1.start();
+                thread2.start();
+                //thread3.start();
+            }
         } catch (final Exception e) {
             logger.error("Error creating leave request for : "+leaveRequest.getCollaborator().getFirstName(), e);
         }
-        return leaveRequest;
+        return savedLeaveRequest;
     }
 
     @Override
     public LeaveRequest update(LeaveRequest leaveRequest) {
+        LeaveRequest savedLeaveRequest = null;
         try {
-            leaveRequest = leaveRequestRepository.save(leaveRequest);
+            savedLeaveRequest = leaveRequestRepository.save(leaveRequest);
+            if(savedLeaveRequest != null && LeaveStatus.PENDING.equals(savedLeaveRequest.getStatus())) {
+                Thread thread1 = new Thread(new CollaboratorNotificationThread(savedLeaveRequest, notificationConfig.getLeaveRequestsUrl()));
+                Thread thread2 = new Thread(new ManagerNotificationThread(savedLeaveRequest, notificationConfig.getLeaveRequestsUrl()));
+                Thread thread3 = new Thread(new RhNotificationThread(savedLeaveRequest, notificationConfig.getLeaveRequestsUrl(), collaboratorService.findRHEmail()));
+                thread1.start();
+                thread2.start();
+                //thread3.start();
+            }
         } catch (final Exception e) {
             logger.error("Error updating leave request for collaborator with id : "+leaveRequest.getId(), e);
         }
-        return leaveRequest;
+        return savedLeaveRequest;
     }
 
     @Override
@@ -138,6 +167,10 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
                 oldLeaveRequest.setStatus(LeaveStatus.valueOf(responseDTO.getStatus()));
             }
             leaveRequest = leaveRequestRepository.save(oldLeaveRequest);
+            if(LeaveStatus.VALIDATED.equals(leaveRequest.getStatus()) || LeaveStatus.REJECTED.equals(leaveRequest.getStatus())) {
+                Thread thread1 = new Thread(new CollaboratorNotificationThread(leaveRequest, notificationConfig.getLeaveRequestsUrl()));
+                thread1.start();
+            }
         } catch (final Exception e) {
             logger.error("Error responding leave request with id : "+id, e);
         }
@@ -451,6 +484,17 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
             leaveRequests = leaveRequestRepository.findLeaveRequestsByTeamId(id);
         } catch (final Exception e) {
             logger.error("Error retrieving leave requests list for team with id : "+id, e);
+        }
+        return leaveRequests;
+    }
+
+    @Override
+    public List<LeaveRequest> findNotValidated() {
+        List<LeaveRequest> leaveRequests = null;
+        try {
+            leaveRequests = leaveRequestRepository.findNotValidated();
+        } catch (final Exception e) {
+            logger.error("Error retrieving not validated leave requests "+e);
         }
         return leaveRequests;
     }

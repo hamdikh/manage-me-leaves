@@ -61,4 +61,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, UUID
     @Query(value = "SELECT l.* FROM public.leave_requests AS l WHERE l.is_deleted = 'false' AND l.status = 'VALIDATED' AND l.collaborator_id = :id", nativeQuery = true)
     List<LeaveRequest> findLeaveRequestsByCollaboratorId(UUID id);
 
+    @Query(value = "SELECT l.* FROM public.leave_requests AS l WHERE l.is_deleted = 'false' AND l.status IN ('PENDING', 'PARTIALLY_VALIDATED')", nativeQuery = true)
+    List<LeaveRequest> findNotValidated();
+
 }
