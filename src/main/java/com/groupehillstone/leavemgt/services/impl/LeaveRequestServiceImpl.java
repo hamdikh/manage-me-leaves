@@ -121,7 +121,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
                 Thread thread3 = new Thread(new RhNotificationThread(savedLeaveRequest, notificationConfig.getLeaveRequestsUrl(), collaboratorService.findRHEmail()));
                 thread1.start();
                 thread2.start();
-                //thread3.start();
+                thread3.start();
             }
         } catch (final Exception e) {
             logger.error("Error creating leave request for : "+leaveRequest.getCollaborator().getFirstName(), e);
@@ -140,7 +140,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
                 Thread thread3 = new Thread(new RhNotificationThread(savedLeaveRequest, notificationConfig.getLeaveRequestsUrl(), collaboratorService.findRHEmail()));
                 thread1.start();
                 thread2.start();
-                //thread3.start();
+                thread3.start();
             }
         } catch (final Exception e) {
             logger.error("Error updating leave request for collaborator with id : "+leaveRequest.getId(), e);
