@@ -80,17 +80,20 @@ public class NotificationRelancer {
     }
 
     private void notifyRH(LeaveRequest leaveRequest) {
-        RestTemplate restTemplate = new RestTemplate();
-        NotificationDTO request = new NotificationDTO();
-        request.setCategory(NotificationCategory.LEAVE_REQUEST);
-        request.setType(NotificationType.RELANCE);
-        request.setValidatorEmail(collaboratorService.findRHEmail());
-        request.setCollaboratorLastName(leaveRequest.getCollaborator().getLastName());
-        request.setCollaboratorFirstName(leaveRequest.getCollaborator().getFirstName());
-        try {
-            restTemplate.postForObject(notificationConfig.getLeaveRequestsUrl(), request, ResponseEntity.class);
-        } catch (final Exception e) {
-            logger.error("Error communicating with notification microService "+e);
+        List<String> emails = collaboratorService.findRHEmail();
+        for(String email : emails) {
+            RestTemplate restTemplate = new RestTemplate();
+            NotificationDTO request = new NotificationDTO();
+            request.setCategory(NotificationCategory.LEAVE_REQUEST);
+            request.setType(NotificationType.RELANCE);
+            request.setValidatorEmail(email);
+            request.setCollaboratorLastName(leaveRequest.getCollaborator().getLastName());
+            request.setCollaboratorFirstName(leaveRequest.getCollaborator().getFirstName());
+            try {
+                restTemplate.postForObject(notificationConfig.getLeaveRequestsUrl(), request, ResponseEntity.class);
+            } catch (final Exception e) {
+                logger.error("Error communicating with notification microService "+e);
+            }
         }
     }
 

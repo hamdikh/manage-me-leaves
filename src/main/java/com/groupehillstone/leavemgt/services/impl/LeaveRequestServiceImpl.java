@@ -338,7 +338,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         if(salesManagerId != null || !businessUnitIdCheck || keywordsCheck) {
             inner.append(" INNER JOIN public.collaborators AS c ON c.id = l.collaborator_id");
             if(salesManagerId != null) {
-                condition.append(" AND c.identity_role IN ('EMPLOYEE', 'TEAM_MANAGER') AND c.sales_manager_id = '"+salesManagerId+"'");
+                condition.append(" AND c.identity_role IN ('EMPLOYEE', 'TEAM_MANAGER', 'BUSINESS_UNIT_MANAGER') AND c.sales_manager_id = '"+salesManagerId+"'");
             }
             if(!businessUnitIdCheck) {
                 condition.append(" AND c.business_unit_id = '"+businessUnitId+"'");
