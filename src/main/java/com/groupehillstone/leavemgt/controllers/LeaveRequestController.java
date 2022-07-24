@@ -59,7 +59,7 @@ public class LeaveRequestController {
     }
 
     @GetMapping("/all")
-    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_BUSINESS')")
+    @PreAuthorize("hasRole('ROLE_RH') or hasRole('ROLE_BUSINESS') or hasRole('ROLE_ADMIN')")
     public ResponseEntity getAllPageable(@RequestParam(defaultValue = "0") int page,
                                          @RequestParam(defaultValue = "15") int size,
                                           @RequestParam(required = false) String status,
