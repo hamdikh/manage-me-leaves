@@ -48,25 +48,25 @@ public class LeaveRequestValidator {
         ErrorResponse response = null;
         List<ErrorResponse.ValidationError> errors = new ArrayList<>();
         try {
-            if(leaveRequestDTO != null) {
+            if (leaveRequestDTO != null) {
                 String status = leaveRequestDTO.getStatus();
                 CollaboratorDTO collaboratorDTO = leaveRequestDTO.getCollaborator();
                 List<LeaveDTO> leaves = leaveRequestDTO.getLeaves();
-                if(StringUtils.isEmpty(status) || StringUtils.isBlank(status)) {
+                if (StringUtils.isEmpty(status) || StringUtils.isBlank(status)) {
                     errors.add(new ErrorResponse.ValidationError("status", "STATUS_EMPTY"));
                 } else {
-                    if(!EnumUtils.isValidEnum(LeaveStatus.class, status)) {
+                    if (!EnumUtils.isValidEnum(LeaveStatus.class, status)) {
                         errors.add(new ErrorResponse.ValidationError("status", "INVALID_STATUS"));
                     }
                 }
-                if(collaboratorDTO == null) {
+                if (collaboratorDTO == null) {
                     errors.add(new ErrorResponse.ValidationError("collaborator", "COLLABORATOR_EMPTY"));
                 }
-                if(leaves.size() == 0) {
+                if (leaves.size() == 0) {
                     errors.add(new ErrorResponse.ValidationError("leaves", "LEAVES_EMPTY"));
                 }
             }
-            if(!CollectionUtils.isEmpty(errors)) {
+            if (!CollectionUtils.isEmpty(errors)) {
                 response = ErrorUtils.buildErrorResponseValidator("VALIDATION_ERROR", HttpStatus.INTERNAL_SERVER_ERROR, errors);
             }
         } catch (final Exception e) {
@@ -79,28 +79,28 @@ public class LeaveRequestValidator {
         ErrorResponse response = null;
         List<ErrorResponse.ValidationError> errors = new ArrayList<>();
         try {
-            if(leaveRequestDTO != null) {
+            if (leaveRequestDTO != null) {
                 LeaveRequest leaveRequest = leaveRequestService.findById(uuidMapper.stringToUUID(leaveRequestDTO.getId()));
                 String status = leaveRequestDTO.getStatus();
                 CollaboratorDTO collaboratorDTO = leaveRequestDTO.getCollaborator();
                 List<LeaveDTO> leaves = leaveRequestDTO.getLeaves();
-                if(LeaveStatus.DRAFT.equals(leaveRequest.getStatus())) {
-                    if(StringUtils.isEmpty(status) || StringUtils.isBlank(status)) {
+                if (LeaveStatus.DRAFT.equals(leaveRequest.getStatus())) {
+                    if (StringUtils.isEmpty(status) || StringUtils.isBlank(status)) {
                         errors.add(new ErrorResponse.ValidationError("status", "STATUS_EMPTY"));
                     } else {
-                        if(!EnumUtils.isValidEnum(LeaveStatus.class, status)) {
+                        if (!EnumUtils.isValidEnum(LeaveStatus.class, status)) {
                             errors.add(new ErrorResponse.ValidationError("status", "INVALID_STATUS"));
                         }
                     }
-                    if(collaboratorDTO == null) {
+                    if (collaboratorDTO == null) {
                         errors.add(new ErrorResponse.ValidationError("collaborator", "COLLABORATOR_EMPTY"));
                     }
-                    if(leaves.size() == 0) {
+                    if (leaves.size() == 0) {
                         errors.add(new ErrorResponse.ValidationError("leaves", "LEAVES_EMPTY"));
                     }
                 }
             }
-            if(!CollectionUtils.isEmpty(errors)) {
+            if (!CollectionUtils.isEmpty(errors)) {
                 response = ErrorUtils.buildErrorResponseValidator("VALIDATION_ERROR", HttpStatus.INTERNAL_SERVER_ERROR, errors);
             }
         } catch (final Exception e) {
@@ -113,68 +113,70 @@ public class LeaveRequestValidator {
         ErrorResponse response = null;
         List<ErrorResponse.ValidationError> errors = new ArrayList<>();
         try {
-            if(leaveRequestDTO != null) {
+            if (leaveRequestDTO != null) {
                 String status = leaveRequestDTO.getStatus();
                 LeaveRequest leaveRequest = leaveRequestService.findById(uuidMapper.stringToUUID(leaveRequestDTO.getId()));
-                if(StringUtils.isEmpty(status) || StringUtils.isBlank(status)) {
+                if (StringUtils.isEmpty(status) || StringUtils.isBlank(status)) {
                     errors.add(new ErrorResponse.ValidationError("status", "STATUS_EMPTY"));
                 } else {
-                    if(!EnumUtils.isValidEnum(LeaveStatus.class, status)) {
+                    if (!EnumUtils.isValidEnum(LeaveStatus.class, status)) {
                         errors.add(new ErrorResponse.ValidationError("status", "INVALID_STATUS"));
                     } else {
-                        if(LeaveStatus.VALIDATED.toString().equals(leaveRequestDTO.getStatus())) {
-                            if(leaveRequest.getFirstValidator() == null || leaveRequest.getSecondValidator() == null) {
+                        if (LeaveStatus.VALIDATED.toString().equals(leaveRequestDTO.getStatus())) {
+                            if (leaveRequest.getFirstValidator() == null || leaveRequest.getSecondValidator() == null) {
                                 CollaboratorDTO collaboratorDTO = leaveRequestDTO.getCollaborator();
                                 Collaborator collaborator = collaboratorService.findCollaboratorById(uuidMapper.stringToUUID(collaboratorDTO.getId()));
                                 CollaboratorDTO validatorDTO = leaveRequestDTO.getValidator();
                                 Collaborator validator = collaboratorService.findCollaboratorById(uuidMapper.stringToUUID(validatorDTO.getId()));
                                 List<LeaveDTO> leaves = leaveRequestDTO.getLeaves();
-                                if(collaboratorDTO == null) {
+                                if (collaborator == null) {
                                     errors.add(new ErrorResponse.ValidationError("collaborator", "COLLABORATOR_EMPTY"));
                                 }
-                                if(validatorDTO == null) {
+                                if (validator == null) {
                                     errors.add(new ErrorResponse.ValidationError("validator", "VALIDATOR_EMPTY"));
                                 } else {
-                                    if(collaborator.getIdentityRole().equals(IdentityRole.TEAM_MANAGER) || collaborator.getIdentityRole().equals(IdentityRole.EMPLOYEE)) {
-                                        if(!validator.getIdentityRole().equals(IdentityRole.RH) && !(validator.getIdentityRole().equals(IdentityRole.BUSINESS) && collaborator.getSalesManager().getId().equals(validator.getId()))) {
+                                    assert collaborator != null;
+                                    if(collaborator.getSalesManager() == null) {
+                                        if (!IdentityRole.RH.equals(validator.getIdentityRole()) && !(collaborator.getManager().getId().equals(validator.getId()))) {
                                             errors.add(new ErrorResponse.ValidationError("validator", "VALIDATOR_NOT_ALLOWED"));
                                         }
                                     } else {
-                                        if(!validator.getIdentityRole().equals(IdentityRole.RH) && !(validator.getIdentityRole().equals(IdentityRole.ADMIN) && collaborator.getManager().equals(validator) )) {
+                                        if (!IdentityRole.RH.equals(validator.getIdentityRole()) && !(IdentityRole.BUSINESS.equals(validator.getIdentityRole())) && collaborator.getSalesManager().getId().equals(validator.getId())) {
                                             errors.add(new ErrorResponse.ValidationError("validator", "VALIDATOR_NOT_ALLOWED"));
                                         }
                                     }
                                 }
-                                if(leaves.size() == 0) {
+                                if (leaves.size() == 0) {
                                     errors.add(new ErrorResponse.ValidationError("leaves", "LEAVES_EMPTY"));
                                 }
                             } else {
                                 errors.add(new ErrorResponse.ValidationError("validator", "REQUEST_MAX_VALIDATORS"));
                             }
                         } else {
-                            if(leaveRequest.getFirstValidator() == null || leaveRequest.getSecondValidator() == null) {
+                            if (leaveRequest.getFirstValidator() == null || leaveRequest.getSecondValidator() == null) {
                                 CollaboratorDTO collaboratorDTO = leaveRequestDTO.getCollaborator();
                                 Collaborator collaborator = collaboratorService.findCollaboratorById(uuidMapper.stringToUUID(collaboratorDTO.getId()));
                                 CollaboratorDTO validatorDTO = leaveRequestDTO.getValidator();
                                 Collaborator validator = collaboratorService.findCollaboratorById(uuidMapper.stringToUUID(validatorDTO.getId()));
                                 List<LeaveDTO> leaves = leaveRequestDTO.getLeaves();
-                                if(collaboratorDTO == null) {
+                                if (collaborator == null) {
                                     errors.add(new ErrorResponse.ValidationError("collaborator", "COLLABORATOR_EMPTY"));
                                 }
-                                if(validatorDTO == null) {
+                                if (validator == null) {
                                     errors.add(new ErrorResponse.ValidationError("validator", "VALIDATOR_EMPTY"));
                                 } else {
-                                    if(collaborator.getIdentityRole().equals(IdentityRole.TEAM_MANAGER.toString()) || collaborator.getIdentityRole().equals(IdentityRole.EMPLOYEE.toString())) {
-                                        if(!validator.getIdentityRole().equals(IdentityRole.RH.toString()) && !(validator.getIdentityRole().equals(IdentityRole.BUSINESS) && collaborator.getSalesManager().getId().equals(validator.getId()))) {
+                                    assert collaborator != null;
+                                    if(collaborator.getSalesManager() == null) {
+                                        if (!IdentityRole.RH.equals(validator.getIdentityRole()) && !(collaborator.getManager().getId().equals(validator.getId()))) {
                                             errors.add(new ErrorResponse.ValidationError("validator", "VALIDATOR_NOT_ALLOWED"));
                                         }
                                     } else {
-                                        if(!validator.getIdentityRole().equals(IdentityRole.RH.toString()) && !(validator.getIdentityRole().equals(IdentityRole.ADMIN.toString()) && collaborator.getManager().equals(validator) )) {
+                                        if (!IdentityRole.RH.equals(validator.getIdentityRole()) && !(IdentityRole.BUSINESS.equals(validator.getIdentityRole())) && collaborator.getSalesManager().getId().equals(validator.getId())) {
                                             errors.add(new ErrorResponse.ValidationError("validator", "VALIDATOR_NOT_ALLOWED"));
                                         }
                                     }
                                 }
-                                if(leaves.size() == 0) {
+                                if (leaves.size() == 0) {
                                     errors.add(new ErrorResponse.ValidationError("leaves", "LEAVES_EMPTY"));
                                 }
                             }
@@ -182,7 +184,7 @@ public class LeaveRequestValidator {
                     }
                 }
             }
-            if(!CollectionUtils.isEmpty(errors)) {
+            if (!CollectionUtils.isEmpty(errors)) {
                 response = ErrorUtils.buildErrorResponseValidator("VALIDATION_ERROR", HttpStatus.INTERNAL_SERVER_ERROR, errors);
             }
         } catch (final Exception e) {

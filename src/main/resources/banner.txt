@@ -3,7 +3,7 @@ ${Ansi.RED}     /  |/  /___ _____  ____ _____ ____     /  |/  /__
 ${Ansi.RED}    / /|_/ / __ `/ __ \/ __ `/ __ `/ _ \   / /|_/ / _ \
 ${Ansi.RED}   / /  / / /_/ / / / / /_/ / /_/ /  __/  / /  / /  __/
 ${Ansi.RED}  /_/  /_/\__,_/_/ /_/\__,_/\__, /\___/  /_/  /_/\___/
-${Ansi.RED}                         /____/
+${Ansi.RED}                           /____/
 ${Ansi.DEFAULT}
-${Ansi.DEFAULT}                        @project.artifactId@ : @project.version@
-${Ansi.DEFAULT}
+${Ansi.DEFAULT}                        Application Name : ${application.title}
+${Ansi.DEFAULT}                        Application Version : ${application.version}

@@ -40,7 +40,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, UUID
     @Query(value = "SELECT * FROM public.leave_requests AS l INNER JOIN public.leave_requests_leaves AS ll ON ll.leave_request_id = l.id WHERE ll.leaves_id = :id", nativeQuery = true)
     LeaveRequest findLeaveRequestByLeaveId(UUID id);
 
-    @Query(value = "SELECT l.* FROM public.leave_requests AS l INNER JOIN public.collaborators as c ON c.id = l.collaborator_id WHERE l.is_deleted = 'false' AND l.status <> 'DRAFT' AND c.sales_manager_id = :id AND c.identity_role IN ('EMPLOYEE', 'TEAM_MANAGER')", nativeQuery = true)
+    @Query(value = "SELECT l.* FROM public.leave_requests AS l INNER JOIN public.collaborators as c ON c.id = l.collaborator_id WHERE l.is_deleted = 'false' AND l.status <> 'DRAFT' AND c.sales_manager_id = :id AND c.identity_role IN ('EMPLOYEE', 'TEAM_MANAGER', 'BUSINESS_UNIT_MANAGER')", nativeQuery = true)
     Page<LeaveRequest> findLeaveRequestsBySalesManagerId(UUID id, Pageable pageable);
 
     @Query(value = "SELECT l.* FROM public.leave_requests AS l INNER JOIN public.collaborators as c ON c.id = l.collaborator_id WHERE l.is_deleted = 'false' AND l.status <> 'DRAFT' AND c.manager_id = :id AND c.identity_role IN ('EMPLOYEE','BUSINESS_UNIT_MANAGER', 'RH', 'ADMIN', 'BUSINESS')", nativeQuery = true)
@@ -60,5 +60,13 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, UUID
 
     @Query(value = "SELECT l.* FROM public.leave_requests AS l WHERE l.is_deleted = 'false' AND l.status = 'VALIDATED' AND l.collaborator_id = :id", nativeQuery = true)
     List<LeaveRequest> findLeaveRequestsByCollaboratorId(UUID id);
+
+    @Query(value = "SELECT l.* FROM public.leave_requests AS l WHERE l.is_deleted = 'false' AND l.status IN ('PENDING', 'PARTIALLY_VALIDATED')", nativeQuery = true)
+    List<LeaveRequest> findNotValidated();
+
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE public.leave_requests SET status = 'DRAFT' WHERE id = :id AND is_deleted = 'false'", nativeQuery = true)
+    void cancelSubmission(UUID id);
 
 }
