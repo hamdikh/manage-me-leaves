@@ -5,5 +5,6 @@ public enum NotificationType {
     RELANCE,
     SAVED,
     REJECTED,
-    VALIDATED
+    VALIDATED,
+    CANCELLATION
 }

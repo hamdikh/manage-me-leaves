@@ -9,6 +9,7 @@ import com.groupehillstone.leavemgt.dto.ResponseDTO;
 import com.groupehillstone.leavemgt.entities.Leave;
 import com.groupehillstone.leavemgt.entities.LeaveRequest;
 import com.groupehillstone.leavemgt.enums.LeaveStatus;
+import com.groupehillstone.leavemgt.enums.NotificationType;
 import com.groupehillstone.leavemgt.mapper.CollaboratorMapper;
 import com.groupehillstone.leavemgt.mapper.LeaveRequestMapper;
 import com.groupehillstone.leavemgt.repositories.LeaveRequestRepository;
@@ -117,11 +118,11 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
             savedLeaveRequest = leaveRequestRepository.save(leaveRequest);
             if(savedLeaveRequest != null && LeaveStatus.PENDING.equals(savedLeaveRequest.getStatus())) {
                 Thread thread1 = new Thread(new CollaboratorNotificationThread(savedLeaveRequest, notificationConfig.getLeaveRequestsUrl()));
-                Thread thread2 = new Thread(new ManagerNotificationThread(savedLeaveRequest, notificationConfig.getLeaveRequestsUrl()));
-                Thread thread3 = new Thread(new RhNotificationThread(savedLeaveRequest, notificationConfig.getLeaveRequestsUrl(), collaboratorService.findRHEmail()));
+                Thread thread2 = new Thread(new ManagerNotificationThread(savedLeaveRequest, notificationConfig.getLeaveRequestsUrl(), NotificationType.NOTIFICATION));
+                Thread thread3 = new Thread(new RhNotificationThread(savedLeaveRequest, notificationConfig.getLeaveRequestsUrl(), collaboratorService.findRHEmail(), NotificationType.NOTIFICATION));
                 thread1.start();
-                thread2.start();
-                thread3.start();
+                //thread2.start();
+                //thread3.start();
             }
         } catch (final Exception e) {
             logger.error("Error creating leave request for : "+leaveRequest.getCollaborator().getFirstName(), e);
@@ -136,8 +137,8 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
             savedLeaveRequest = leaveRequestRepository.save(leaveRequest);
             if(savedLeaveRequest != null && LeaveStatus.PENDING.equals(savedLeaveRequest.getStatus())) {
                 Thread thread1 = new Thread(new CollaboratorNotificationThread(savedLeaveRequest, notificationConfig.getLeaveRequestsUrl()));
-                Thread thread2 = new Thread(new ManagerNotificationThread(savedLeaveRequest, notificationConfig.getLeaveRequestsUrl()));
-                Thread thread3 = new Thread(new RhNotificationThread(savedLeaveRequest, notificationConfig.getLeaveRequestsUrl(), collaboratorService.findRHEmail()));
+                Thread thread2 = new Thread(new ManagerNotificationThread(savedLeaveRequest, notificationConfig.getLeaveRequestsUrl(), NotificationType.NOTIFICATION));
+                Thread thread3 = new Thread(new RhNotificationThread(savedLeaveRequest, notificationConfig.getLeaveRequestsUrl(), collaboratorService.findRHEmail(), NotificationType.NOTIFICATION));
                 thread1.start();
                 thread2.start();
                 thread3.start();
@@ -497,5 +498,18 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
             logger.error("Error retrieving not validated leave requests "+e);
         }
         return leaveRequests;
+    }
+
+    @Override
+    public void cancelSubmission(UUID id) {
+        try {
+            leaveRequestRepository.cancelSubmission(id);
+            Thread thread = new Thread(new ManagerNotificationThread(leaveRequestRepository.findLeaveRequestByLeaveId(id), notificationConfig.getLeaveRequestsUrl(), NotificationType.CANCELLATION));
+            Thread thread1 = new Thread(new RhNotificationThread(leaveRequestRepository.findLeaveRequestByLeaveId(id), notificationConfig.getLeaveRequestsUrl(),collaboratorService.findRHEmail(), NotificationType.CANCELLATION));
+            thread.start();
+            thread1.start();
+        } catch (final Exception e) {
+            logger.error("Error cancelling leave request submission with id : "+id, e);
+        }
     }
 }

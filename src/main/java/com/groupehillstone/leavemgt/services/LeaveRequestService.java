@@ -58,4 +58,6 @@ public interface LeaveRequestService {
 
     List<LeaveRequest> findNotValidated();
 
+    void cancelSubmission(UUID id);
+
 }

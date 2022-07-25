@@ -452,4 +452,16 @@ public class LeaveRequestController {
         return orders;
     }
 
+    @GetMapping("/cancel/{id}")
+    public ResponseEntity cancel(@PathVariable("id") UUID id) {
+        ResponseEntity response;
+        try {
+            leaveRequestService.cancelSubmission(id);
+            response = ResponseEntity.status(HttpStatus.OK).body(new SuccessResponse("CANCELLED"));
+        } catch (final Exception e) {
+            logger.error("Error cancelling leave request submission with id : "+id, e);
+            response = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e);
+        }
+        return response;
+    }
 }
