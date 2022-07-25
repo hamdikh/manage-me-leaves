@@ -29,6 +29,7 @@ public class CollaboratorNotificationThread implements Runnable {
         }
         request.setCollaboratorEmail(leaveRequest.getCollaborator().getEmail());
         request.setCollaboratorFirstName(leaveRequest.getCollaborator().getFirstName());
+        request.setCollaboratorLastName(leaveRequest.getCollaborator().getLastName());
         restTemplate.postForObject(url, request, ResponseEntity.class);
     }
 
