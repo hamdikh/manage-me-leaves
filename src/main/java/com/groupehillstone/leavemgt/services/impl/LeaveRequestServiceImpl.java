@@ -190,7 +190,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     }
 
     @Override
-    public Page<LeaveRequest> searchWithCriteria(String status, UUID typeId, LocalDate createdAt, UUID businessUnitId, Pageable paging) {
+    public Page<LeaveRequest> searchWithCriteria(String status, UUID typeId, LocalDate createdAt, String keywords, UUID businessUnitId, Pageable paging) {
         StringBuilder queryBuilder = new StringBuilder();
         StringBuilder queryBuilderCount = new StringBuilder();
         StringBuilder init = new StringBuilder("SELECT DISTINCT(l.*) FROM public.leave_requests as l");
@@ -199,7 +199,8 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         StringBuilder condition = new StringBuilder(" WHERE l.is_deleted = 'false' AND l.status <> 'DRAFT'");
         StringBuilder order = new StringBuilder(" ORDER BY l."+paging.getSort().toString().replace(':', ' '));
 
-        boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
+        boolean statusCheck = StringUtils.isEmpty(status) || StringUtils.isBlank(status);
+        boolean keywordsCheck = StringUtils.isEmpty(keywords) || StringUtils.isBlank(keywords);
         boolean typeIdCheck = typeId == null;
         boolean createdAtCheck = createdAt == null;
         boolean businessUnitIdCheck = businessUnitId == null;
@@ -215,9 +216,14 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
                     "INNER JOIN public.leaves AS lv ON lv.id = lrl.leaves_id");
             condition.append(" AND lv.type_id = '"+typeId+"'");
         }
-        if(!businessUnitIdCheck) {
+        if(!businessUnitIdCheck || !keywordsCheck) {
             inner.append(" INNER JOIN public.collaborators AS c ON c.id = l.collaborator_id");
-            condition.append(" AND c.business_unit_id = '"+businessUnitId+"'");
+            if(!businessUnitIdCheck) {
+                condition.append(" AND c.business_unit_id = '"+businessUnitId+"'");
+            }
+            if(!keywordsCheck) {
+                condition.append(" AND (LOWER(c.first_name) LIKE '%"+keywords+"%' OR LOWER(c.last_name) LIKE '%"+keywords+"%')");
+            }
         }
 
         queryBuilder.append(init).append(inner).append(condition).append(order);
@@ -227,7 +233,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         query.setMaxResults(paging.getPageSize());
         List<LeaveRequest> leaveRequests = query.getResultList();
 
-        queryBuilderCount.append(count).append(condition);
+        queryBuilderCount.append(count).append(inner).append(condition);
         Query countQuery = entityManager.createNativeQuery(queryBuilderCount.toString());
         long countResult = Long.parseLong(countQuery.getSingleResult().toString());
 
@@ -278,7 +284,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         query.setMaxResults(paging.getPageSize());
         List<LeaveRequest> leaveRequests = query.getResultList();
 
-        queryBuilderCount.append(count).append(condition);
+        queryBuilderCount.append(count).append(inner).append(condition);
         Query countQuery = entityManager.createNativeQuery(queryBuilderCount.toString());
         long countResult = Long.parseLong(countQuery.getSingleResult().toString());
 
@@ -305,6 +311,17 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
             leaveRequests = leaveRequestRepository.findLeaveRequestsBySalesManagerId(id, pageable);
         } catch (final Exception e) {
             logger.error("Error retrieving pageable leave requests list for sales manager with id : "+id, e);
+        }
+        return leaveRequests;
+    }
+
+    @Override
+    public List<LeaveRequest> findLeaveRequestsByManagerId(UUID id) {
+        List<LeaveRequest> leaveRequests = null;
+        try {
+            leaveRequests = leaveRequestRepository.findLeaveRequestsByManagerId(id);
+        } catch (final Exception e)  {
+            logger.error("Error retrieving leave requests list with manager id : "+id, e);
         }
         return leaveRequests;
     }
@@ -339,7 +356,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         if(salesManagerId != null || !businessUnitIdCheck || keywordsCheck) {
             inner.append(" INNER JOIN public.collaborators AS c ON c.id = l.collaborator_id");
             if(salesManagerId != null) {
-                condition.append(" AND c.identity_role IN ('EMPLOYEE', 'TEAM_MANAGER', 'BUSINESS_UNIT_MANAGER') AND c.sales_manager_id = '"+salesManagerId+"'");
+                condition.append(" AND c.identity_role IN ('EMPLOYEE', 'TEAM_MANAGER', 'BUSINESS_UNIT_MANAGER', 'BUSINESS') AND (c.sales_manager_id = '"+salesManagerId+"' OR c.manager_id = '"+salesManagerId+"') ");
             }
             if(!businessUnitIdCheck) {
                 condition.append(" AND c.business_unit_id = '"+businessUnitId+"'");
@@ -367,7 +384,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         query.setMaxResults(paging.getPageSize());
         List<LeaveRequest> leaveRequests = query.getResultList();
 
-        queryBuilderCount.append(count).append(condition);
+        queryBuilderCount.append(count).append(inner).append(condition);
         Query countQuery = entityManager.createNativeQuery(queryBuilderCount.toString());
         long countResult = Long.parseLong(countQuery.getSingleResult().toString());
 
