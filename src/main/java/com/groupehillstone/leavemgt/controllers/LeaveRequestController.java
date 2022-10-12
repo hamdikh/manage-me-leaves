@@ -65,6 +65,7 @@ public class LeaveRequestController {
                                           @RequestParam(required = false) String status,
                                          @RequestParam(required = false) String typeId,
                                          @RequestParam(required = false) String createdAt,
+                                         @RequestParam(required = false) String keywords,
                                          @RequestParam(required = false) String businessUnitId,
                                          @RequestParam(defaultValue = "created_at,desc") String[] sort) {
         ResponseEntity responseEntity;
@@ -76,13 +77,14 @@ public class LeaveRequestController {
             boolean statusCheck = StringUtils.isEmpty(status) && StringUtils.isBlank(status);
             boolean typeIdCheck = StringUtils.isEmpty(typeId) && StringUtils.isBlank(typeId);
             boolean createdAtCheck = StringUtils.isEmpty(createdAt) && StringUtils.isBlank(createdAt);
+            boolean keywordCheck = StringUtils.isEmpty(keywords) && StringUtils.isBlank(keywords);
             boolean businessUnitIdCheck = StringUtils.isEmpty(businessUnitId) && StringUtils.isBlank(businessUnitId);
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate formattedCreatedAt = null;
 
             Page<LeaveRequest> pageLeaveRequests = null;
-            if(statusCheck && typeIdCheck && createdAtCheck && businessUnitIdCheck) {
+            if(statusCheck && typeIdCheck && createdAtCheck && keywordCheck && businessUnitIdCheck) {
                 pageLeaveRequests = leaveRequestService.findAll(paging);
             } else {
                 UUID uuidType = null;
@@ -96,7 +98,7 @@ public class LeaveRequestController {
                 if(!businessUnitIdCheck) {
                     uuidBusinessUnitId = uuidMapper.stringToUUID(businessUnitId);
                 }
-                pageLeaveRequests = leaveRequestService.searchWithCriteria(status, uuidType, formattedCreatedAt, uuidBusinessUnitId, paging);
+                pageLeaveRequests = leaveRequestService.searchWithCriteria(status, uuidType, formattedCreatedAt, keywords, uuidBusinessUnitId, paging);
             }
 
             leaveRequests = leaveRequestMapper.toDto(pageLeaveRequests.getContent());
@@ -422,6 +424,20 @@ public class LeaveRequestController {
             response = ResponseEntity.status(HttpStatus.OK).body(leaveRequests);
         } catch (final Exception e) {
             logger.error("Error retrieving leave requests for team with id : "+id, e);
+            response = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e);
+        }
+        return response;
+    }
+
+    @GetMapping("/calendar/own-team/{id}")
+    @PreAuthorize("hasRole('ROLE_BUSINESS')")
+    public ResponseEntity getOwnTeamLeaveRequests(@PathVariable("id") UUID id) {
+        ResponseEntity response;
+        try {
+            final List<LeaveRequestDTO> leaveRequests = leaveRequestMapper.toDto(leaveRequestService.findLeaveRequestsByManagerId(id));
+            response = ResponseEntity.status(HttpStatus.OK).body(leaveRequests);
+        } catch (final Exception e) {
+            logger.error("Error retrieving leave request list by manager id : "+id, e);
             response = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e);
         }
         return response;
